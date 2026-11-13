@@ -15,6 +15,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
 import com.example.expensetracker.core.designsystem.components.AppBottomSheet
@@ -43,7 +45,7 @@ fun DashboardCustomizeBottomSheet(
 
     AppBottomSheet(
         onDismissRequest = onDismiss,
-        title = "Customize Dashboard"
+        title = stringResource(R.string.customize_dashboard)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)) {
             AppSurface(
@@ -59,8 +61,8 @@ fun DashboardCustomizeBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        AppTypography.TitleSmall(text = "Compact Hero Layout")
-                        AppTypography.Caption(text = "Use tighter padding on balance card")
+                        AppTypography.TitleSmall(text = stringResource(R.string.compact_hero_layout))
+                        AppTypography.Caption(text = stringResource(R.string.compact_hero_desc))
                     }
                     AppSwitch(
                         checked = preferences.isCompactDashboard,
@@ -71,7 +73,7 @@ fun DashboardCustomizeBottomSheet(
 
             Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
             AppTypography.LabelLarge(
-                text = "Visible Widgets & Order",
+                text = stringResource(R.string.visible_widgets_order),
                 color = MaterialTheme.colorScheme.primary
             )
             AppDivider()

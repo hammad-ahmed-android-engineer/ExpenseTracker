@@ -6,8 +6,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -19,24 +21,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
+import com.example.expensetracker.core.designsystem.components.AppAlertDialog
 import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.presentation.components.ConfirmationDialog
 import com.example.expensetracker.presentation.settings.components.AboutAppCard
 import com.example.expensetracker.presentation.settings.components.BackupRestorePreviewDialog
-import com.example.expensetracker.presentation.settings.components.DataBackupCard
+import com.example.expensetracker.presentation.settings.components.DataExportSafCard
 import com.example.expensetracker.presentation.settings.components.FinanceSettingsCard
 import com.example.expensetracker.presentation.settings.components.NotificationsSettingsCard
-import com.example.expensetracker.presentation.settings.components.ThemeAppearanceCard
+import com.example.expensetracker.presentation.settings.components.PalettePickerCard
+import com.example.expensetracker.presentation.settings.components.RealisticSampleDataCard
+import com.example.expensetracker.presentation.settings.components.ThemeModesCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,7 +58,7 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showClearConfirm by remember { mutableStateOf(false) }
+    var showClearConfirm by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.statusMessage) {
         state.statusMessage?.let { msg ->
@@ -104,7 +110,7 @@ fun SettingsScreen(
                         out.write(backup.toByteArray())
                     }
                 }
-                viewModel.notifyMessage("Offline backup saved")
+                viewModel.notifyMessage("Offline backup saved via Android SAF")
             }
         }
     }
@@ -129,7 +135,12 @@ fun SettingsScreen(
     AppScaffold(
         topBar = {
             AppTopAppBar(
-                title = { AppTypography.TitleLarge(text = stringResource(R.string.settings_title)) }
+                title = {
+                    AppTypography.TitleLarge(
+                        text = stringResource(R.string.settings_tools_title),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             )
         },
         snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) }
@@ -150,29 +161,15 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                 ) {
                     item {
-                        AppTypography.TitleMedium(
-                            text = stringResource(R.string.appearance_theme),
-                            color = MaterialTheme.colorScheme.primary
+                        PalettePickerCard(
+                            selectedPalette = prefs.colorPalette,
+                            onColorPaletteChange = { viewModel.updateColorPalette(it) }
                         )
                     }
                     item {
-                        ThemeAppearanceCard(
-                            preferences = prefs,
-                            onThemeModeChange = { viewModel.updateThemeMode(it) },
-                            onColorPaletteChange = { viewModel.updateColorPalette(it) },
-                            onDynamicColorChange = { viewModel.updateDynamicColor(it) }
-                        )
-                    }
-                    item {
-                        AppTypography.TitleMedium(
-                            text = stringResource(R.string.finance_currency),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    item {
-                        FinanceSettingsCard(
-                            defaultCurrency = prefs.defaultCurrency,
-                            onCurrencyChange = { viewModel.updateCurrency(it) }
+                        ThemeModesCard(
+                            selectedMode = prefs.themeMode,
+                            onThemeModeChange = { viewModel.updateThemeMode(it) }
                         )
                     }
                 }
@@ -185,36 +182,17 @@ fun SettingsScreen(
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                 ) {
                     item {
-                        AppTypography.TitleMedium(
-                            text = "Notifications & Alerts",
-                            color = MaterialTheme.colorScheme.primary
+                        DataExportSafCard(
+                            onExportJson = { createBackupLauncher.launch("spendwise_backup.json") },
+                            onExportCsv = { exportCsvLauncher.launch("spendwise_transactions.csv") },
+                            onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) }
                         )
                     }
                     item {
-                        NotificationsSettingsCard(
-                            preferences = prefs,
-                            onBudgetAlertChange = { viewModel.updateBudgetAlert(it) },
-                            onRecurringReminderChange = { viewModel.updateRecurringReminder(it) },
-                            onBudgetThresholdChange = { viewModel.updateBudgetThreshold(it) }
+                        RealisticSampleDataCard(
+                            onSeedSampleData = { viewModel.seedSampleData() }
                         )
                     }
-                    item {
-                        AppTypography.TitleMedium(
-                            text = stringResource(R.string.sample_data_storage),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    item {
-                        DataBackupCard(
-                            onExportCsv = { exportCsvLauncher.launch("expenses_export.csv") },
-                            onExportJson = { exportJsonLauncher.launch("expenses_export.json") },
-                            onCreateBackup = { createBackupLauncher.launch("expense_tracker_backup.json") },
-                            onRestoreBackup = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) },
-                            onSeedSampleData = { viewModel.seedSampleData() },
-                            onClearAllData = { showClearConfirm = true }
-                        )
-                    }
-                    item { AboutAppCard() }
                 }
             }
         } else {
@@ -227,62 +205,34 @@ fun SettingsScreen(
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
             ) {
                 item {
-                    AppTypography.TitleMedium(
-                        text = stringResource(R.string.appearance_theme),
-                        color = MaterialTheme.colorScheme.primary
+                    PalettePickerCard(
+                        selectedPalette = prefs.colorPalette,
+                        onColorPaletteChange = { viewModel.updateColorPalette(it) }
                     )
                 }
+
                 item {
-                    ThemeAppearanceCard(
-                        preferences = prefs,
-                        onThemeModeChange = { viewModel.updateThemeMode(it) },
-                        onColorPaletteChange = { viewModel.updateColorPalette(it) },
-                        onDynamicColorChange = { viewModel.updateDynamicColor(it) }
+                    ThemeModesCard(
+                        selectedMode = prefs.themeMode,
+                        onThemeModeChange = { viewModel.updateThemeMode(it) }
                     )
                 }
+
                 item {
-                    AppTypography.TitleMedium(
-                        text = stringResource(R.string.finance_currency),
-                        color = MaterialTheme.colorScheme.primary
+                    DataExportSafCard(
+                        onExportJson = { createBackupLauncher.launch("spendwise_backup.json") },
+                        onExportCsv = { exportCsvLauncher.launch("spendwise_transactions.csv") },
+                        onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) }
                     )
                 }
+
                 item {
-                    FinanceSettingsCard(
-                        defaultCurrency = prefs.defaultCurrency,
-                        onCurrencyChange = { viewModel.updateCurrency(it) }
+                    RealisticSampleDataCard(
+                        onSeedSampleData = { viewModel.seedSampleData() }
                     )
                 }
-                item {
-                    AppTypography.TitleMedium(
-                        text = "Notifications & Alerts",
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                item {
-                    NotificationsSettingsCard(
-                        preferences = prefs,
-                        onBudgetAlertChange = { viewModel.updateBudgetAlert(it) },
-                        onRecurringReminderChange = { viewModel.updateRecurringReminder(it) },
-                        onBudgetThresholdChange = { viewModel.updateBudgetThreshold(it) }
-                    )
-                }
-                item {
-                    AppTypography.TitleMedium(
-                        text = stringResource(R.string.sample_data_storage),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-                item {
-                    DataBackupCard(
-                        onExportCsv = { exportCsvLauncher.launch("expenses_export.csv") },
-                        onExportJson = { exportJsonLauncher.launch("expenses_export.json") },
-                        onCreateBackup = { createBackupLauncher.launch("expense_tracker_backup.json") },
-                        onRestoreBackup = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) },
-                        onSeedSampleData = { viewModel.seedSampleData() },
-                        onClearAllData = { showClearConfirm = true }
-                    )
-                }
-                item { AboutAppCard() }
+
+                item { Spacer(modifier = Modifier.height(AppDimensions.paddingLarge)) }
             }
         }
     }
@@ -290,21 +240,26 @@ fun SettingsScreen(
     state.pendingRestore?.let { pending ->
         BackupRestorePreviewDialog(
             preview = pending.preview,
-            onConfirm = { mode -> viewModel.confirmRestore(mode) },
-            onDismiss = { viewModel.dismissRestorePreview() }
+            onDismiss = { viewModel.dismissRestorePreview() },
+            onConfirm = { mode ->
+                viewModel.confirmRestore(mode)
+            }
         )
     }
 
     if (showClearConfirm) {
-        ConfirmationDialog(
-            title = "Clear All Data",
-            message = "Delete all transactions, budgets, savings goals, and recurring rules and restore default accounts?",
-            confirmText = "Reset All",
+        AppAlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            title = stringResource(R.string.confirm_clear_data),
+            text = { AppTypography.BodyMedium(text = stringResource(R.string.clear_data_warning)) },
+            confirmButtonText = stringResource(R.string.clear_all),
             onConfirm = {
                 viewModel.clearAllData()
                 showClearConfirm = false
             },
-            onDismiss = { showClearConfirm = false }
+            dismissButtonText = stringResource(R.string.action_cancel),
+            onDismiss = { showClearConfirm = false },
+            isDestructive = true
         )
     }
 }

@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.window.DialogProperties
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
@@ -26,6 +27,8 @@ import com.example.expensetracker.core.designsystem.AppTypography
 fun AppAlertDialog(
     onDismissRequest: () -> Unit,
     title: String,
+    subtitle: String? = null,
+    icon: ImageVector? = null,
     text: @Composable (() -> Unit)? = null,
     confirmButtonText: String,
     onConfirm: () -> Unit,
@@ -50,10 +53,29 @@ fun AppAlertDialog(
                     .fillMaxWidth()
                     .padding(AppDimensions.components.dialogPadding)
             ) {
+                if (icon != null) {
+                    AppIcon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = if (isDestructive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(bottom = AppDimensions.paddingSmall)
+                    )
+                }
+
                 AppTypography.TitleLarge(
                     text = title,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+
+                if (subtitle != null) {
+                    Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
+                    AppTypography.BodySmall(
+                        text = subtitle,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
 
                 if (text != null) {
                     Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))

@@ -44,12 +44,12 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     private val defaultOrder = DashboardWidgetType.defaultOrder.joinToString(",") { it.key }
 
     override val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { preferences ->
-        val themeStr = preferences[PreferenceKeys.THEME_MODE] ?: ThemeMode.SYSTEM.name
-        val colorStr = preferences[PreferenceKeys.COLOR_PALETTE] ?: ColorPalette.EMERALD_GREEN.name
+        val themeStr = preferences[PreferenceKeys.THEME_MODE] ?: ThemeMode.DARK.name
+        val colorStr = preferences[PreferenceKeys.COLOR_PALETTE] ?: ColorPalette.LAVENDER.name
 
         UserPreferences(
-            themeMode = runCatching { ThemeMode.valueOf(themeStr) }.getOrDefault(ThemeMode.SYSTEM),
-            colorPalette = runCatching { ColorPalette.valueOf(colorStr) }.getOrDefault(ColorPalette.EMERALD_GREEN),
+            themeMode = runCatching { ThemeMode.valueOf(themeStr) }.getOrDefault(ThemeMode.DARK),
+            colorPalette = ColorPalette.fromString(colorStr),
             isDynamicColorEnabled = preferences[PreferenceKeys.DYNAMIC_COLOR] ?: false,
             defaultCurrency = preferences[PreferenceKeys.DEFAULT_CURRENCY] ?: "USD",
             isBudgetAlertEnabled = preferences[PreferenceKeys.BUDGET_ALERT] ?: true,

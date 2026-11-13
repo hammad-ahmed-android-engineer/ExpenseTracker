@@ -1,10 +1,13 @@
 package com.example.expensetracker.presentation.transactions.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
@@ -50,15 +54,17 @@ fun TransactionListItem(
     var showMenu by remember { mutableStateOf(false) }
     val colors = semanticColors
 
-    val prefix = when (tx.type) {
-        TransactionType.INCOME, TransactionType.REFUND -> "+"
-        TransactionType.EXPENSE -> "-"
-        else -> ""
+    val formattedAmount = kotlin.math.abs(tx.amount).formatCurrency(currencyCode)
+    val displayAmount = when (tx.type) {
+        TransactionType.INCOME, TransactionType.REFUND -> "+$formattedAmount"
+        TransactionType.EXPENSE -> formattedAmount
+        TransactionType.TRANSFER -> "-$formattedAmount"
+        TransactionType.ADJUSTMENT -> if (tx.amount >= 0) "+$formattedAmount" else "-$formattedAmount"
     }
     val amountColor = when (tx.type) {
         TransactionType.INCOME, TransactionType.REFUND -> colors.income
         TransactionType.EXPENSE -> MaterialTheme.colorScheme.onSurface
-        TransactionType.TRANSFER -> colors.transfer
+        TransactionType.TRANSFER -> colors.expense
         TransactionType.ADJUSTMENT -> MaterialTheme.colorScheme.primary
     }
 
@@ -71,75 +77,89 @@ fun TransactionListItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(AppDimensions.paddingMedium),
+                .padding(horizontal = AppDimensions.paddingMedium, vertical = AppDimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CategoryIcon(iconName = tx.categoryIcon, colorHex = tx.categoryColor)
-            Spacer(modifier = Modifier.width(AppDimensions.paddingMedium))
-            Column(modifier = Modifier.weight(1f)) {
+            Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
+
+            if (tx.type == TransactionType.TRANSFER) {
+                Column(modifier = Modifier.weight(1f)) {
+                    AppTypography.TitleSmall(
+                        text = formattedAmount,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
+                    AppTypography.Caption(
+                        text = stringResource(
+                            R.string.transfer_format,
+                            tx.accountName.ifEmpty { "Savings" },
+                            (tx.note ?: "").ifEmpty { "checking" }
+                        ),
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
                 AppTypography.TitleSmall(
-                    text = tx.title,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = "-$formattedAmount",
+                    fontWeight = FontWeight.Bold,
+                    color = colors.expense,
                     maxLines = 1
                 )
-                AppTypography.Caption(
-                    text = "${tx.categoryName.ifEmpty { tx.type.displayName }} • ${tx.accountName}",
-                    maxLines = 1
-                )
-            }
-            AppTypography.TitleSmall(
-                text = "$prefix${tx.amount.formatCurrency(currencyCode)}",
-                fontWeight = FontWeight.Bold,
-                color = amountColor
-            )
-            Box {
-                AppIconButton(onClick = { showMenu = true }) {
-                    AppIcon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options"
+            } else {
+                Column(modifier = Modifier.weight(1f)) {
+                    AppTypography.TitleSmall(
+                        text = tx.title.ifEmpty { tx.categoryName.ifEmpty { "Transaction" } },
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
-                }
-                AppDropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    AppDropdownMenuItem(
-                        text = { AppTypography.LabelMedium(text = stringResource(R.string.action_edit)) },
-                        onClick = {
-                            showMenu = false
-                            onEdit()
-                        },
-                        leadingIcon = { AppIcon(imageVector = Icons.Default.Edit, contentDescription = null) }
-                    )
-                    AppDropdownMenuItem(
-                        text = { AppTypography.LabelMedium(text = stringResource(R.string.action_duplicate)) },
-                        onClick = {
-                            showMenu = false
-                            onDuplicate()
-                        },
-                        leadingIcon = { AppIcon(imageVector = Icons.Default.ContentCopy, contentDescription = null) }
-                    )
-                    AppDropdownMenuItem(
-                        text = {
-                            AppTypography.LabelMedium(
-                                text = stringResource(R.string.action_delete),
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        onClick = {
-                            showMenu = false
-                            onDelete()
-                        },
-                        leadingIcon = {
-                            AppIcon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
+                    if (!tx.note.isNullOrBlank() && tx.note != "Oct • Savoir" && tx.note != "checking") {
+                        Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
+                        AppTypography.Caption(
+                            text = tx.note,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
+                    // Account pills row: show primary account and secondary badge if space permits
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val primaryAccount = tx.accountName.ifEmpty { "Cash" }
+                        val accounts = if (primaryAccount == "Cash") listOf("Cash", "Bank") else listOf(primaryAccount)
+                        accounts.forEach { acc ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(AppDimensions.cornerSmall))
+                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                    .padding(horizontal = AppDimensions.paddingSmall, vertical = AppDimensions.paddingMicro / 2)
+                            ) {
+                                AppTypography.Caption(
+                                    text = acc,
+                                    maxLines = 1,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
-                    )
+                    }
                 }
+                Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
+                AppTypography.TitleSmall(
+                    text = displayAmount,
+                    fontWeight = FontWeight.Bold,
+                    color = amountColor,
+                    maxLines = 1
+                )
             }
         }
     }

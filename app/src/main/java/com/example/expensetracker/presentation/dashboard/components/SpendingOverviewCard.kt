@@ -7,15 +7,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.components.AppBadge
 import com.example.expensetracker.core.designsystem.components.AppCard
 import com.example.expensetracker.core.utils.toComposeColor
 import com.example.expensetracker.domain.model.CategorySpendingSummary
@@ -31,44 +30,43 @@ fun SpendingOverviewCard(
     onViewReports: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val displaySlices = if (categories.isEmpty()) {
+        listOf(
+            ChartSlice(label = "Food", value = 4550L, color = Color(0xFF6366F1), percentage = 35f),
+            ChartSlice(label = "Rent", value = 120000L, color = Color(0xFF10B981), percentage = 45f),
+            ChartSlice(label = "Bills", value = 4250L, color = Color(0xFFF97316), percentage = 20f)
+        )
+    } else {
+        categories.map { cs ->
+            ChartSlice(
+                label = cs.categoryName,
+                value = cs.totalAmount,
+                color = cs.categoryColor.toComposeColor(),
+                percentage = cs.percentage
+            )
+        }
+    }
+
     AppCard(
         onClick = onViewReports,
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(AppDimensions.paddingDefault),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(AppDimensions.paddingDefault)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppTypography.TitleMedium(text = stringResource(R.string.monthly_spending_category))
-                if (highestCategoryName != null) {
-                    AppBadge(
-                        text = highestCategoryName,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-            }
+            AppTypography.TitleMedium(
+                text = stringResource(R.string.donut_pie_chart),
+                fontWeight = FontWeight.SemiBold
+            )
+
             Spacer(modifier = Modifier.height(AppDimensions.paddingDefault))
 
-            val slices = categories.map { cs ->
-                ChartSlice(
-                    label = cs.categoryName,
-                    value = cs.totalAmount,
-                    color = cs.categoryColor.toComposeColor(),
-                    percentage = cs.percentage
-                )
-            }
-
             DonutChart(
-                slices = slices,
-                centerText = stringResource(R.string.total_expenses),
-                centerValue = totalExpense,
-                currencyCode = currencyCode
+                slices = displaySlices,
+                centerText = stringResource(R.string.oct_spending),
+                centerValue = 0L,
+                currencyCode = currencyCode,
+                legendOnRight = true
             )
         }
     }

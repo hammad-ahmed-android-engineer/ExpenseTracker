@@ -24,8 +24,8 @@ import com.example.expensetracker.domain.model.ThemeMode
 
 @Composable
 fun ExpenseTrackerTheme(
-    themeMode: ThemeMode = ThemeMode.SYSTEM,
-    colorPalette: ColorPalette = ColorPalette.EMERALD_GREEN,
+    themeMode: ThemeMode = ThemeMode.DARK,
+    colorPalette: ColorPalette = ColorPalette.LAVENDER,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

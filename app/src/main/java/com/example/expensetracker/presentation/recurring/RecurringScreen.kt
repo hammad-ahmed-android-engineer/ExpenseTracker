@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
 import com.example.expensetracker.core.designsystem.components.AppCircularProgressIndicator
+import com.example.expensetracker.core.designsystem.components.AppAlertDialog
 import com.example.expensetracker.core.designsystem.components.AppFloatingActionButton
 import com.example.expensetracker.core.designsystem.components.AppIcon
 import com.example.expensetracker.core.designsystem.components.AppIconButton
@@ -40,7 +42,6 @@ import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
 import com.example.expensetracker.domain.model.RecurringTransaction
-import com.example.expensetracker.presentation.components.ConfirmationDialog
 import com.example.expensetracker.presentation.components.EmptyStateView
 import com.example.expensetracker.presentation.recurring.components.AddRecurringDialog
 import com.example.expensetracker.presentation.recurring.components.RecurringCardItem
@@ -51,7 +52,7 @@ fun RecurringScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<RecurringTransaction?>(null) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -159,14 +160,18 @@ fun RecurringScreen(
     }
 
     pendingDelete?.let { item ->
-        ConfirmationDialog(
-            title = "Delete Recurring Rule",
-            message = "Stop and delete \"${item.title}\"?",
+        AppAlertDialog(
+            onDismissRequest = { pendingDelete = null },
+            title = stringResource(R.string.confirm_delete_recurring),
+            text = { AppTypography.BodyMedium(text = stringResource(R.string.delete_recurring_warning, item.title)) },
+            confirmButtonText = stringResource(R.string.action_delete),
             onConfirm = {
                 viewModel.deleteRecurring(item)
                 pendingDelete = null
             },
-            onDismiss = { pendingDelete = null }
+            dismissButtonText = stringResource(R.string.action_cancel),
+            onDismiss = { pendingDelete = null },
+            isDestructive = true
         )
     }
 }

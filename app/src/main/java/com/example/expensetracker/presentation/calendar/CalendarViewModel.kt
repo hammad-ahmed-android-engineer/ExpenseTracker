@@ -7,8 +7,8 @@ import com.example.expensetracker.core.common.startOfDayMillis
 import com.example.expensetracker.core.common.startOfMonthMillis
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.TransactionRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.GetTransactionsByDateRangeUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import com.example.expensetracker.presentation.components.charts.DailyHeatmapData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,8 +37,8 @@ data class CalendarUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CalendarViewModel @Inject constructor(
-    private val transactionRepository: TransactionRepository,
-    userPreferencesRepository: UserPreferencesRepository
+    private val getTransactionsByDateRangeUseCase: GetTransactionsByDateRangeUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     private val _currentYearMonth = MutableStateFlow(
@@ -47,7 +47,7 @@ class CalendarViewModel @Inject constructor(
     private val _selectedDate = MutableStateFlow(System.currentTimeMillis())
 
     private val monthTransactionsFlow = _currentYearMonth.flatMapLatest { (year, month) ->
-        transactionRepository.getTransactionsByDateRange(
+        getTransactionsByDateRangeUseCase(
             month.startOfMonthMillis(year),
             month.endOfMonthMillis(year)
         )
@@ -57,7 +57,7 @@ class CalendarViewModel @Inject constructor(
         _currentYearMonth,
         _selectedDate,
         monthTransactionsFlow,
-        userPreferencesRepository.userPreferencesFlow
+        getUserPreferencesUseCase()
     ) { (year, month), selectedDate, monthTxs, prefs ->
         val byDay = monthTxs.groupBy { it.date.startOfDayMillis() }
         val dailyExpenseMap = byDay.mapValues { (_, list) ->

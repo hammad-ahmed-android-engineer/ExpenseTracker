@@ -39,4 +39,10 @@ interface BudgetDao {
 
     @Query("SELECT * FROM budget_categories WHERE budgetId = :budgetId")
     suspend fun getBudgetCategoriesForBudget(budgetId: Long): List<BudgetCategoryEntity>
+
+    @Query("DELETE FROM budgets")
+    suspend fun deleteAllBudgets(): Int
+
+    @Query("DELETE FROM budget_categories")
+    suspend fun deleteAllBudgetCategories(): Int
 }

@@ -14,7 +14,7 @@ import com.example.expensetracker.domain.model.CategorySpendingSummary
 import com.example.expensetracker.domain.model.DailySpendingSummary
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.TransactionFilter
+import com.example.expensetracker.domain.model.TransactionFilter
 import com.example.expensetracker.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

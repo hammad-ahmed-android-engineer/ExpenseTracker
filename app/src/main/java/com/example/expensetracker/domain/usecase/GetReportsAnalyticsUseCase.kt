@@ -13,7 +13,8 @@ data class ReportsAnalyticsData(
     val totalExpense: Long = 0L,
     val netSavings: Long = 0L,
     val categorySpendings: List<CategorySpendingSummary> = emptyList(),
-    val dailySpendings: List<DailySpendingSummary> = emptyList()
+    val dailySpendings: List<DailySpendingSummary> = emptyList(),
+    val transactions: List<com.example.expensetracker.domain.model.Transaction> = emptyList()
 )
 
 class GetReportsAnalyticsUseCase @Inject constructor(
@@ -23,8 +24,9 @@ class GetReportsAnalyticsUseCase @Inject constructor(
         transactionRepository.getTotalAmountByTypeAndDateRange(TransactionType.INCOME, startDate, endDate),
         transactionRepository.getTotalAmountByTypeAndDateRange(TransactionType.EXPENSE, startDate, endDate),
         transactionRepository.getCategorySpendingByDateRange(startDate, endDate),
-        transactionRepository.getDailySpendingByDateRange(startDate, endDate)
-    ) { income, expense, categories, dailies ->
+        transactionRepository.getDailySpendingByDateRange(startDate, endDate),
+        transactionRepository.getTransactionsByDateRange(startDate, endDate)
+    ) { income, expense, categories, dailies, txs ->
         val totalExp = expense.coerceAtLeast(1L)
         val categoriesWithPct = categories.map { item ->
             item.copy(percentage = if (expense > 0) (item.totalAmount.toFloat() / totalExp.toFloat()) * 100f else 0f)
@@ -34,7 +36,8 @@ class GetReportsAnalyticsUseCase @Inject constructor(
             totalExpense = expense,
             netSavings = income - expense,
             categorySpendings = categoriesWithPct,
-            dailySpendings = dailies
+            dailySpendings = dailies,
+            transactions = txs
         )
     }
 }

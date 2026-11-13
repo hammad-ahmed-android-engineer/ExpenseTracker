@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import com.example.expensetracker.core.designsystem.theme.ExpenseTrackerTheme
 import com.example.expensetracker.core.navigation.MainAppNavigation
 import com.example.expensetracker.domain.model.UserPreferences
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -17,13 +17,13 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject
-    lateinit var userPreferencesRepository: UserPreferencesRepository
+    lateinit var getUserPreferencesUseCase: GetUserPreferencesUseCase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val userPrefs by userPreferencesRepository.userPreferencesFlow.collectAsState(
+            val userPrefs by getUserPreferencesUseCase().collectAsState(
                 initial = UserPreferences()
             )
 

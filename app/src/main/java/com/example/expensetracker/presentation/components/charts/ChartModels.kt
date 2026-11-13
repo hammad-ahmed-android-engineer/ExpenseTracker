@@ -23,7 +23,12 @@ data class LinePoint(
 data class DailyHeatmapData(
     val dayOfMonth: Int,
     val amount: Long,
-    val intensity: Float
+    val intensity: Float,
+    val dateMillis: Long = 0L,
+    val formattedDate: String = "",
+    val dayOfWeek: Int = 1, // 1 = Monday, 7 = Sunday
+    val transactionCount: Int = 0,
+    val isInSelectedPeriod: Boolean = true
 )
 
 data class WaterfallItem(

@@ -15,7 +15,7 @@ data class Transaction(
     val accountName: String = "",
     val destinationAccountId: Long? = null,
     val destinationAccountName: String? = null,
-    val date: Long,
+    val date: Long = System.currentTimeMillis(),
     val paymentMethod: String = "CASH",
     val note: String? = null,
     val location: String? = null,

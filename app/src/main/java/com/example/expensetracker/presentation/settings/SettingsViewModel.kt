@@ -7,8 +7,9 @@ import com.example.expensetracker.domain.model.BackupRestoreMode
 import com.example.expensetracker.domain.model.ColorPalette
 import com.example.expensetracker.domain.model.ThemeMode
 import com.example.expensetracker.domain.model.UserPreferences
-import com.example.expensetracker.domain.repository.BackupRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
+import com.example.expensetracker.domain.usecase.ManageDataBackupUseCase
+import com.example.expensetracker.domain.usecase.UpdateUserPreferencesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,15 +32,16 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userPreferencesRepository: UserPreferencesRepository,
-    private val backupRepository: BackupRepository
+    getUserPreferencesUseCase: GetUserPreferencesUseCase,
+    private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase,
+    private val manageDataBackupUseCase: ManageDataBackupUseCase
 ) : ViewModel() {
 
     private val _pendingRestore = MutableStateFlow<PendingRestoreBackup?>(null)
     private val _statusMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<SettingsUiState> = combine(
-        userPreferencesRepository.userPreferencesFlow,
+        getUserPreferencesUseCase(),
         _pendingRestore,
         _statusMessage
     ) { prefs, pending, msg ->
@@ -55,56 +57,56 @@ class SettingsViewModel @Inject constructor(
     )
 
     fun updateThemeMode(mode: ThemeMode) {
-        viewModelScope.launch { userPreferencesRepository.updateThemeMode(mode) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateThemeMode(mode) }
     }
 
     fun updateColorPalette(palette: ColorPalette) {
-        viewModelScope.launch { userPreferencesRepository.updateColorPalette(palette) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateColorPalette(palette) }
     }
 
     fun updateDynamicColor(enabled: Boolean) {
-        viewModelScope.launch { userPreferencesRepository.updateDynamicColor(enabled) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateDynamicColor(enabled) }
     }
 
     fun updateCurrency(currency: String) {
-        viewModelScope.launch { userPreferencesRepository.updateDefaultCurrency(currency) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateDefaultCurrency(currency) }
     }
 
     fun updateBudgetAlert(enabled: Boolean) {
-        viewModelScope.launch { userPreferencesRepository.updateBudgetAlert(enabled) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateBudgetAlert(enabled) }
     }
 
     fun updateRecurringReminder(enabled: Boolean) {
-        viewModelScope.launch { userPreferencesRepository.updateRecurringReminder(enabled) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateRecurringReminder(enabled) }
     }
 
     fun updateBudgetThreshold(threshold: Int) {
-        viewModelScope.launch { userPreferencesRepository.updateBudgetWarningThreshold(threshold) }
+        viewModelScope.launch { updateUserPreferencesUseCase.updateBudgetWarningThreshold(threshold) }
     }
 
     fun seedSampleData() {
         viewModelScope.launch {
-            backupRepository.seedSampleData()
-            userPreferencesRepository.updateSampleDataSeeded(true)
+            manageDataBackupUseCase.seedSampleData()
+            updateUserPreferencesUseCase.updateSampleDataSeeded(true)
             _statusMessage.value = "Sample transactions, budgets, and goals added"
         }
     }
 
     fun clearAllData() {
         viewModelScope.launch {
-            backupRepository.clearAllUserData()
-            userPreferencesRepository.updateSampleDataSeeded(false)
+            manageDataBackupUseCase.clearAllUserData()
+            updateUserPreferencesUseCase.updateSampleDataSeeded(false)
             _statusMessage.value = "All data reset to defaults"
         }
     }
 
-    suspend fun generateCsvExport(): String = backupRepository.exportTransactionsCsv()
-    suspend fun generateJsonExport(): String = backupRepository.exportTransactionsJson()
-    suspend fun generateFullBackup(): String = backupRepository.createBackupJson()
+    suspend fun generateCsvExport(): String = manageDataBackupUseCase.exportTransactionsCsv()
+    suspend fun generateJsonExport(): String = manageDataBackupUseCase.exportTransactionsJson()
+    suspend fun generateFullBackup(): String = manageDataBackupUseCase.createBackupJson()
 
     fun inspectRestoreJson(json: String) {
         viewModelScope.launch {
-            backupRepository.inspectBackup(json)
+            manageDataBackupUseCase.inspectBackup(json)
                 .onSuccess { preview ->
                     _pendingRestore.value = PendingRestoreBackup(rawJson = json, preview = preview)
                 }
@@ -117,7 +119,7 @@ class SettingsViewModel @Inject constructor(
     fun confirmRestore(mode: BackupRestoreMode) {
         val pending = _pendingRestore.value ?: return
         viewModelScope.launch {
-            backupRepository.restoreBackup(pending.rawJson, mode)
+            manageDataBackupUseCase.restoreBackup(pending.rawJson, mode)
                 .onSuccess { preview ->
                     _pendingRestore.value = null
                     _statusMessage.value = "Restored ${preview.transactionCount} transactions & ${preview.accountCount} accounts"

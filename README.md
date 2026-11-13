@@ -19,7 +19,7 @@ A complete, production-grade, offline personal finance management application bu
 - **Budgeting & Rollover**: Set monthly/weekly/yearly limits with visual progress bars and warning notifications at 70%, 80%, 90%, and 100%.
 - **Savings Goals**: Target tracking with automated monthly required savings calculation and deposit/withdrawal management.
 - **WorkManager Recurring Transactions**: Background auto-generation of due recurring bills (salary, rent, Netflix, subscriptions) with duplicate suppression.
-- **Multi-Theme & Color Palette Engine**: Material Design 3 theme system with 4 Theme Modes (Light, Dark, System, AMOLED Black) and 10 dynamic color schemes.
+- **Multi-Theme & Color Palette Engine**: Material Design 3 theme system with 4 Theme Modes (Light, Dark, System, AMOLED) and 10 dynamic color schemes.
 - **Offline Financial Insights**: Automated local spending advice cards (highest spending day, category anomalies, savings rate).
 - **Data Export & SAF Backup/Restore**: Export transactions to CSV/JSON and create full offline database backups using Android Storage Access Framework.
 

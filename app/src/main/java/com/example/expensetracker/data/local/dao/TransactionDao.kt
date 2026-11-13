@@ -33,6 +33,9 @@ interface TransactionDao {
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransactionById(id: Long): Int
 
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAllTransactions(): Int
+
     @Query("SELECT * FROM transactions WHERE id = :id")
     suspend fun getTransactionById(id: Long): TransactionEntity?
 
@@ -115,4 +118,7 @@ interface TransactionDao {
 
     @Query("SELECT COUNT(*) FROM transactions WHERE accountId = :accountId OR destinationAccountId = :accountId")
     suspend fun getTransactionCountForAccount(accountId: Long): Int
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE type = :type")
+    suspend fun getTransactionCountByType(type: String): Int
 }

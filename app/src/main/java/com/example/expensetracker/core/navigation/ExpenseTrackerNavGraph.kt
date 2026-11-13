@@ -65,7 +65,7 @@ fun MainAppNavigation(
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val showTopLevelNav = bottomNavItems.any { it.route == currentRoute }
+    val showTopLevelNav = bottomNavItems.any { it.route == currentRoute } || currentRoute == Screen.Accounts.route
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 

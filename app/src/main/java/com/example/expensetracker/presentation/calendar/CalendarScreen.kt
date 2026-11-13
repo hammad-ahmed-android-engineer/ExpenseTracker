@@ -73,10 +73,10 @@ fun CalendarScreen(
                 },
                 actions = {
                     AppIconButton(onClick = { viewModel.onPreviousMonth() }) {
-                        AppIcon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Prev Month")
+                        AppIcon(imageVector = Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.prev_month))
                     }
                     AppIconButton(onClick = { viewModel.onNextMonth() }) {
-                        AppIcon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Month")
+                        AppIcon(imageVector = Icons.Default.ChevronRight, contentDescription = stringResource(R.string.next_month))
                     }
                 }
             )

@@ -5,13 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Account
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Transaction
+import com.example.expensetracker.domain.model.TransactionFilter
+import com.example.expensetracker.domain.model.TransactionSortOrder
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.AccountRepository
-import com.example.expensetracker.domain.repository.CategoryRepository
-import com.example.expensetracker.domain.repository.TransactionFilter
-import com.example.expensetracker.domain.repository.TransactionSortOrder
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
 import com.example.expensetracker.domain.usecase.DeleteTransactionUseCase
+import com.example.expensetracker.domain.usecase.GetAccountsUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import com.example.expensetracker.domain.usecase.SaveTransactionUseCase
 import com.example.expensetracker.domain.usecase.SearchTransactionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -43,18 +43,18 @@ class TransactionViewModel @Inject constructor(
     private val searchTransactionsUseCase: SearchTransactionsUseCase,
     private val saveTransactionUseCase: SaveTransactionUseCase,
     private val deleteTransactionUseCase: DeleteTransactionUseCase,
-    categoryRepository: CategoryRepository,
-    accountRepository: AccountRepository,
-    userPreferencesRepository: UserPreferencesRepository
+    getCategoriesUseCase: GetCategoriesUseCase,
+    getAccountsUseCase: GetAccountsUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     private val _filter = MutableStateFlow(TransactionFilter())
 
     val uiState: StateFlow<TransactionsUiState> = combine(
         _filter.flatMapLatest { searchTransactionsUseCase(it) },
-        categoryRepository.getAllCategories(),
-        accountRepository.getAllActiveAccounts(),
-        userPreferencesRepository.userPreferencesFlow,
+        getCategoriesUseCase(),
+        getAccountsUseCase.getActiveAccounts(),
+        getUserPreferencesUseCase(),
         _filter
     ) { txs, cats, accs, prefs, f ->
         val inc = txs.filter { it.type == TransactionType.INCOME || it.type == TransactionType.REFUND }

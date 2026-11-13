@@ -44,11 +44,22 @@ class BudgetRepositoryImpl @Inject constructor(
                 val spent = if (catLimits.isNotEmpty()) {
                     catLimits.sumOf { it.spentAmount }
                 } else {
-                    transactionDao.getTotalAmountByTypeAndDateRange(
-                        "EXPENSE",
-                        budgetEntity.startDate,
-                        budgetEntity.endDate
-                    )
+                    val allCats = categoryDao.getAllCategories()
+                    val matchedCat = allCats.find { it.name.contains(budgetEntity.name, ignoreCase = true) || budgetEntity.name.contains(it.name, ignoreCase = true) }
+                    if (matchedCat != null) {
+                        transactionDao.getCategoryAmountByTypeAndDateRange(
+                            type = "EXPENSE",
+                            categoryId = matchedCat.id,
+                            startDate = budgetEntity.startDate,
+                            endDate = budgetEntity.endDate
+                        )
+                    } else {
+                        transactionDao.getTotalAmountByTypeAndDateRange(
+                            "EXPENSE",
+                            budgetEntity.startDate,
+                            budgetEntity.endDate
+                        )
+                    }
                 }
                 budgetEntity.toDomain(spent, catLimits)
             }

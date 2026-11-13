@@ -20,6 +20,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
 import com.example.expensetracker.core.designsystem.components.AppBottomSheet
@@ -50,7 +52,7 @@ fun CategoryDetailBottomSheet(
                 Spacer(modifier = Modifier.width(AppDimensions.paddingMedium))
                 Column {
                     AppTypography.TitleMedium(text = "${category.type.displayName} Category")
-                    AppTypography.Caption(text = "Manage subcategories")
+                    AppTypography.Caption(text = stringResource(R.string.manage_subcategories))
                 }
             }
 
@@ -62,7 +64,7 @@ fun CategoryDetailBottomSheet(
                 AppOutlinedTextField(
                     value = newSubName,
                     onValueChange = { newSubName = it },
-                    label = { AppTypography.LabelMedium(text = "New Subcategory") },
+                    label = { AppTypography.LabelMedium(text = stringResource(R.string.new_subcategory_label)) },
                     modifier = Modifier.weight(1f)
                 )
                 AppIconButton(
@@ -84,7 +86,7 @@ fun CategoryDetailBottomSheet(
 
             if (category.subcategories.isEmpty()) {
                 AppTypography.BodySmall(
-                    text = "No subcategories yet. Add one above.",
+                    text = stringResource(R.string.no_subcategories_yet),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {

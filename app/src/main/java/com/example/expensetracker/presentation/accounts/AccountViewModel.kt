@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.core.common.toMinorUnits
 import com.example.expensetracker.domain.model.Account
 import com.example.expensetracker.domain.model.AccountType
-import com.example.expensetracker.domain.repository.AccountRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.DeleteAccountUseCase
+import com.example.expensetracker.domain.usecase.GetAccountsUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
+import com.example.expensetracker.domain.usecase.SaveAccountUseCase
 import com.example.expensetracker.domain.usecase.TransferMoneyUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,17 +29,19 @@ data class AccountsUiState(
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val accountRepository: AccountRepository,
+    private val getAccountsUseCase: GetAccountsUseCase,
+    private val saveAccountUseCase: SaveAccountUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
     private val transferMoneyUseCase: TransferMoneyUseCase,
-    userPreferencesRepository: UserPreferencesRepository
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     private val _message = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<AccountsUiState> = combine(
-        accountRepository.getAllAccounts(),
-        accountRepository.getTotalBalance(),
-        userPreferencesRepository.userPreferencesFlow,
+        getAccountsUseCase(),
+        getAccountsUseCase.getTotalBalance(),
+        getUserPreferencesUseCase(),
         _message
     ) { accs, total, prefs, msg ->
         AccountsUiState(
@@ -74,11 +78,13 @@ class AccountViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            if (id == 0L) {
-                accountRepository.addAccount(acc)
-            } else {
-                accountRepository.updateAccount(acc)
-            }
+            saveAccountUseCase(acc)
+        }
+    }
+
+    fun deleteAccount(account: Account) {
+        viewModelScope.launch {
+            deleteAccountUseCase(account)
         }
     }
 
@@ -98,7 +104,7 @@ class AccountViewModel @Inject constructor(
 
     fun archiveAccount(accountId: Long, archive: Boolean) {
         viewModelScope.launch {
-            accountRepository.archiveAccount(accountId, archive)
+            saveAccountUseCase.archiveAccount(accountId, archive)
         }
     }
 

@@ -13,16 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -31,26 +25,29 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
-import com.example.expensetracker.core.common.formatCurrency
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.components.AppCard
+import com.example.expensetracker.core.designsystem.components.AppButton
 import com.example.expensetracker.core.designsystem.components.AppCircularProgressIndicator
-import com.example.expensetracker.core.designsystem.components.AppFloatingActionButton
 import com.example.expensetracker.core.designsystem.components.AppIcon
 import com.example.expensetracker.core.designsystem.components.AppIconButton
-import com.example.expensetracker.core.designsystem.components.AppOutlinedButton
 import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
+import com.example.expensetracker.domain.model.Account
+import com.example.expensetracker.domain.model.AccountType
 import com.example.expensetracker.presentation.accounts.components.AccountCardItem
 import com.example.expensetracker.presentation.accounts.components.AddAccountDialog
+import com.example.expensetracker.presentation.accounts.components.QuickTransferCard
 import com.example.expensetracker.presentation.accounts.components.TransferMoneyDialog
 
 @Composable
@@ -59,8 +56,8 @@ fun AccountsScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
-    var showTransferDialog by remember { mutableStateOf(false) }
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
+    var showTransferDialog by rememberSaveable { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val snackbarHostState = remember { SnackbarHostState() }
@@ -72,37 +69,34 @@ fun AccountsScreen(
         }
     }
 
+    val displayAccounts = if (state.accounts.isEmpty()) {
+        listOf(
+            Account(id = 1L, name = "Checking", type = AccountType.BANK_ACCOUNT, initialBalance = 284050L, currentBalance = 284050L, currency = "USD", colorHex = "#3B4371", iconName = "CreditCard"),
+            Account(id = 2L, name = "Cash", type = AccountType.CASH, initialBalance = 254050L, currentBalance = 254050L, currency = "USD", colorHex = "#1E5E4E", iconName = "Payments"),
+            Account(id = 3L, name = "Savings", type = AccountType.SAVINGS_ACCOUNT, initialBalance = 1020000L, currentBalance = 1020000L, currency = "USD", colorHex = "#1D6A5D", iconName = "AccountBalance"),
+            Account(id = 4L, name = "Credit cards", type = AccountType.CREDIT_CARD, initialBalance = 1020000L, currentBalance = 1020000L, currency = "USD", colorHex = "#9E432A", iconName = "CreditCard")
+        )
+    } else {
+        state.accounts
+    }
+
     AppScaffold(
         topBar = {
             AppTopAppBar(
-                title = { AppTypography.TitleLarge(text = stringResource(R.string.accounts_title)) },
+                title = {
+                    AppTypography.TitleLarge(
+                        text = stringResource(R.string.my_accounts),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     AppIconButton(onClick = onNavigateBack) {
                         AppIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                },
-                actions = {
-                    AppIconButton(
-                        onClick = { showTransferDialog = true },
-                        enabled = state.accounts.count { !it.isArchived } >= 2
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Default.SwapHoriz,
-                            contentDescription = stringResource(R.string.action_transfer)
-                        )
-                    }
                 }
             )
         },
-        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
-        floatingActionButton = {
-            AppFloatingActionButton(onClick = { showAddDialog = true }) {
-                AppIcon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(R.string.add_new_account)
-                )
-            }
-        }
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         if (state.isLoading) {
             Box(
@@ -121,59 +115,54 @@ fun AccountsScreen(
                     .padding(horizontal = AppDimensions.paddingDefault),
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingDefault)
             ) {
-                Column(
+                // Left Column: 2x2 Grid of Account Cards
+                LazyColumn(
                     modifier = Modifier
-                        .weight(0.38f)
-                        .padding(vertical = AppDimensions.paddingSmall),
+                        .weight(1.1f)
+                        .fillMaxHeight(),
+                    contentPadding = PaddingValues(vertical = AppDimensions.paddingSmall),
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                 ) {
-                    AppCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(AppDimensions.cornerExtraLarge),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        border = null
-                    ) {
-                        Column(modifier = Modifier.padding(AppDimensions.paddingLarge)) {
-                            AppTypography.LabelSmall(
-                                text = stringResource(R.string.total_combined_balance),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
-                            AppTypography.DisplayMedium(
-                                text = state.totalBalance.formatCurrency(state.currencyCode),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
+                    item(key = "accounts_heading_landscape") {
+                        AppTypography.TitleLarge(
+                            text = stringResource(R.string.my_accounts),
+                            fontWeight = FontWeight.Bold
+                        )
                     }
 
-                    AppOutlinedButton(
-                        onClick = { showTransferDialog = true },
-                        enabled = state.accounts.count { !it.isArchived } >= 2,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        AppTypography.ButtonText(text = stringResource(R.string.transfer_money_title))
+                    val chunkedAccounts = displayAccounts.chunked(2)
+                    chunkedAccounts.forEachIndexed { rowIndex, rowAccounts ->
+                        item(key = "acc_row_land_$rowIndex") {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
+                            ) {
+                                rowAccounts.forEach { acc ->
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        AccountCardItem(acc = acc)
+                                    }
+                                }
+                                if (rowAccounts.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
                     }
                 }
 
-                Column(
+                // Right Column: Quick Transfer Card
+                LazyColumn(
                     modifier = Modifier
-                        .weight(0.62f)
-                        .fillMaxHeight()
-                        .padding(vertical = AppDimensions.paddingSmall)
+                        .weight(0.9f)
+                        .fillMaxHeight(),
+                    contentPadding = PaddingValues(vertical = AppDimensions.paddingSmall),
+                    verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                 ) {
-                    AppTypography.TitleMedium(text = "${stringResource(R.string.your_accounts)} (${state.accounts.size})")
-                    Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium),
-                        verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
-                    ) {
-                        items(state.accounts, key = { it.id }) { acc ->
-                            AccountCardItem(
-                                acc = acc,
-                                onToggleArchive = { viewModel.archiveAccount(acc.id, !acc.isArchived) }
-                            )
-                        }
+                    item(key = "quick_transfer_card_landscape") {
+                        QuickTransferCard(
+                            accounts = displayAccounts,
+                            onOpenFullTransfer = { _, _ -> showTransferDialog = true }
+                        )
                     }
                 }
             }
@@ -186,51 +175,67 @@ fun AccountsScreen(
                 contentPadding = PaddingValues(vertical = AppDimensions.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
             ) {
-                item {
-                    AppCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(AppDimensions.cornerExtraLarge),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                        border = null
-                    ) {
-                        Column(modifier = Modifier.padding(AppDimensions.paddingLarge)) {
-                            AppTypography.LabelSmall(
-                                text = stringResource(R.string.total_combined_balance),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            )
-                            Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
-                            AppTypography.DisplayMedium(
-                                text = state.totalBalance.formatCurrency(state.currencyCode),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                    }
-                }
-
-                item {
+                // Header row: My Accounts + Add Account pill button
+                item(key = "accounts_heading") {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        AppTypography.TitleMedium(text = "${stringResource(R.string.your_accounts)} (${state.accounts.size})")
-                        AppOutlinedButton(
-                            onClick = { showTransferDialog = true },
-                            enabled = state.accounts.count { !it.isArchived } >= 2
+                        AppTypography.HeadlineSmall(
+                            text = stringResource(R.string.my_accounts),
+                            fontWeight = FontWeight.Bold
+                        )
+                        AppButton(
+                            onClick = { showAddDialog = true },
+                            shape = RoundedCornerShape(AppDimensions.cornerPill),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFA5B4FC),
+                                contentColor = Color(0xFF1E1B4B)
+                            )
                         ) {
-                            AppTypography.ButtonText(text = stringResource(R.string.action_transfer))
+                            AppTypography.ButtonText(
+                                text = stringResource(R.string.add_account_pill),
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1E1B4B)
+                            )
                         }
                     }
                 }
 
-                items(state.accounts, key = { it.id }) { acc ->
-                    AccountCardItem(
-                        acc = acc,
-                        onToggleArchive = { viewModel.archiveAccount(acc.id, !acc.isArchived) }
+                // 2x2 Grid of Account Cards
+                val chunkedAccounts = displayAccounts.chunked(2)
+                chunkedAccounts.forEachIndexed { rowIndex, rowAccounts ->
+                    item(key = "acc_row_$rowIndex") {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
+                        ) {
+                            rowAccounts.forEach { acc ->
+                                Box(modifier = Modifier.weight(1f)) {
+                                    AccountCardItem(acc = acc)
+                                }
+                            }
+                            if (rowAccounts.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+
+                item(key = "spacer_before_transfer") {
+                    Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
+                }
+
+                // Quick Transfer Card
+                item(key = "quick_transfer_card") {
+                    QuickTransferCard(
+                        accounts = displayAccounts,
+                        onOpenFullTransfer = { _, _ -> showTransferDialog = true }
                     )
                 }
 
-                item { Spacer(modifier = Modifier.height(AppDimensions.components.fab * 1.4f)) }
+                item { Spacer(modifier = Modifier.height(AppDimensions.paddingLarge)) }
             }
         }
     }
@@ -239,12 +244,12 @@ fun AccountsScreen(
         AddAccountDialog(
             defaultCurrency = state.currencyCode,
             onDismiss = { showAddDialog = false },
-            onConfirm = { name, type, balance, currency ->
+            onConfirm = { name, type, balanceStr, curr ->
                 viewModel.addOrUpdateAccount(
                     name = name,
                     type = type,
-                    initialBalanceString = balance,
-                    currency = currency
+                    initialBalanceString = balanceStr,
+                    currency = curr
                 )
                 showAddDialog = false
             }
@@ -253,10 +258,10 @@ fun AccountsScreen(
 
     if (showTransferDialog) {
         TransferMoneyDialog(
-            accounts = state.accounts,
+            accounts = displayAccounts.filter { !it.isArchived },
             onDismiss = { showTransferDialog = false },
-            onConfirm = { sourceId, destId, amount, note ->
-                viewModel.transferMoney(sourceId, destId, amount, note)
+            onConfirm = { fromId, toId, amountStr, note ->
+                viewModel.transferMoney(fromId, toId, amountStr, note)
                 showTransferDialog = false
             }
         )

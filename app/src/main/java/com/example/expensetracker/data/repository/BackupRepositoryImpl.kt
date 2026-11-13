@@ -1,8 +1,12 @@
 package com.example.expensetracker.data.repository
 
-import androidx.room.withTransaction
 import com.example.expensetracker.core.export.DataExporter
-import com.example.expensetracker.data.local.database.ExpenseTrackerDatabase
+import com.example.expensetracker.data.local.dao.AccountDao
+import com.example.expensetracker.data.local.dao.BudgetDao
+import com.example.expensetracker.data.local.dao.CategoryDao
+import com.example.expensetracker.data.local.dao.RecurringTransactionDao
+import com.example.expensetracker.data.local.dao.SavingsGoalDao
+import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.data.local.database.SampleDataGenerator
 import com.example.expensetracker.data.local.entity.AccountEntity
 import com.example.expensetracker.data.local.entity.BudgetEntity
@@ -22,19 +26,24 @@ import javax.inject.Singleton
 
 @Singleton
 class BackupRepositoryImpl @Inject constructor(
-    private val database: ExpenseTrackerDatabase,
+    private val accountDao: AccountDao,
+    private val categoryDao: CategoryDao,
+    private val transactionDao: TransactionDao,
+    private val budgetDao: BudgetDao,
+    private val savingsGoalDao: SavingsGoalDao,
+    private val recurringTransactionDao: RecurringTransactionDao,
     private val transactionRepository: TransactionRepository,
     private val dataExporter: DataExporter,
     private val sampleDataGenerator: SampleDataGenerator
 ) : BackupRepository {
 
     override suspend fun createBackupJson(): String {
-        val accounts = database.accountDao().getAllAccountsFlow().first()
-        val categories = database.categoryDao().getAllCategoriesFlow().first()
-        val transactions = database.transactionDao().getAllTransactionsFlow().first()
-        val budgets = database.budgetDao().getAllBudgetsFlow().first()
-        val goals = database.savingsGoalDao().getAllGoalsFlow().first()
-        val recurring = database.recurringTransactionDao().getAllRecurringFlow().first()
+        val accounts = accountDao.getAllAccountsFlow().first()
+        val categories = categoryDao.getAllCategoriesFlow().first()
+        val transactions = transactionDao.getAllTransactionsFlow().first()
+        val budgets = budgetDao.getAllBudgetsFlow().first()
+        val goals = savingsGoalDao.getAllGoalsFlow().first()
+        val recurring = recurringTransactionDao.getAllRecurringFlow().first()
 
         return JSONObject().apply {
             put("appVersion", "1.0.0")
@@ -171,12 +180,19 @@ class BackupRepositoryImpl @Inject constructor(
         val preview = inspectBackup(json).getOrThrow()
         val obj = JSONObject(json)
 
-        database.withTransaction {
-            if (mode == BackupRestoreMode.REPLACE_ALL) {
-                database.clearAllTables()
-            }
+        if (mode == BackupRestoreMode.REPLACE_ALL) {
+            transactionDao.deleteAllTransactions()
+            budgetDao.deleteAllBudgetCategories()
+            budgetDao.deleteAllBudgets()
+            savingsGoalDao.deleteAllContributions()
+            savingsGoalDao.deleteAllGoals()
+            recurringTransactionDao.deleteAllRecurring()
+            accountDao.deleteAllAccounts()
+            categoryDao.deleteAllSubcategories()
+            categoryDao.deleteAllCategories()
+        }
 
-            val categoriesArr = obj.optJSONArray("categories") ?: JSONArray()
+        val categoriesArr = obj.optJSONArray("categories") ?: JSONArray()
             val catList = mutableListOf<CategoryEntity>()
             for (i in 0 until categoriesArr.length()) {
                 val c = categoriesArr.getJSONObject(i)
@@ -194,24 +210,24 @@ class BackupRepositoryImpl @Inject constructor(
                 )
             }
             if (mode == BackupRestoreMode.REPLACE_ALL) {
-                database.categoryDao().insertCategories(catList)
+                categoryDao.insertCategories(catList)
             } else {
-                val existingCats = database.categoryDao().getAllCategoriesFlow().first().map { "${it.name}:${it.type}" }.toSet()
+                val existingCats = categoryDao.getAllCategoriesFlow().first().map { "${it.name}:${it.type}" }.toSet()
                 catList.filterNot { "${it.name}:${it.type}" in existingCats }.forEach {
-                    database.categoryDao().insertCategory(it)
+                    categoryDao.insertCategory(it)
                 }
             }
 
             val accountsArr = obj.optJSONArray("accounts") ?: JSONArray()
             val existingAccountNames = if (mode == BackupRestoreMode.MERGE_SKIP_DUPLICATES) {
-                database.accountDao().getAllAccountsFlow().first().map { it.name }.toSet()
+                accountDao.getAllAccountsFlow().first().map { it.name }.toSet()
             } else emptySet()
 
             for (i in 0 until accountsArr.length()) {
                 val a = accountsArr.getJSONObject(i)
                 val name = a.getString("name")
                 if (mode == BackupRestoreMode.MERGE_SKIP_DUPLICATES && name in existingAccountNames) continue
-                database.accountDao().insertAccount(
+                accountDao.insertAccount(
                     AccountEntity(
                         id = if (mode == BackupRestoreMode.REPLACE_ALL) a.getLong("id") else 0L,
                         name = name,
@@ -229,7 +245,7 @@ class BackupRepositoryImpl @Inject constructor(
 
             val txArr = obj.optJSONArray("transactions") ?: JSONArray()
             val existingTxKeys = if (mode == BackupRestoreMode.MERGE_SKIP_DUPLICATES) {
-                database.transactionDao().getAllTransactionsFlow().first()
+                transactionDao.getAllTransactionsFlow().first()
                     .map { "${it.title}|${it.amount}|${it.date}" }.toSet()
             } else emptySet()
 
@@ -239,7 +255,7 @@ class BackupRepositoryImpl @Inject constructor(
                 val amount = t.getLong("amount")
                 val date = t.getLong("date")
                 if (mode == BackupRestoreMode.MERGE_SKIP_DUPLICATES && "$title|$amount|$date" in existingTxKeys) continue
-                database.transactionDao().insertTransaction(
+                transactionDao.insertTransaction(
                     TransactionEntity(
                         id = if (mode == BackupRestoreMode.REPLACE_ALL) t.getLong("id") else 0L,
                         title = title,
@@ -259,7 +275,7 @@ class BackupRepositoryImpl @Inject constructor(
             val budgetsArr = obj.optJSONArray("budgets") ?: JSONArray()
             for (i in 0 until budgetsArr.length()) {
                 val b = budgetsArr.getJSONObject(i)
-                database.budgetDao().insertBudget(
+                budgetDao.insertBudget(
                     BudgetEntity(
                         id = if (mode == BackupRestoreMode.REPLACE_ALL) b.getLong("id") else 0L,
                         name = b.getString("name"),
@@ -277,7 +293,7 @@ class BackupRepositoryImpl @Inject constructor(
             val goalsArr = obj.optJSONArray("savingsGoals") ?: JSONArray()
             for (i in 0 until goalsArr.length()) {
                 val g = goalsArr.getJSONObject(i)
-                database.savingsGoalDao().insertGoal(
+                savingsGoalDao.insertGoal(
                     SavingsGoalEntity(
                         id = if (mode == BackupRestoreMode.REPLACE_ALL) g.getLong("id") else 0L,
                         title = g.getString("title"),
@@ -296,7 +312,7 @@ class BackupRepositoryImpl @Inject constructor(
             val recArr = obj.optJSONArray("recurring") ?: JSONArray()
             for (i in 0 until recArr.length()) {
                 val r = recArr.getJSONObject(i)
-                database.recurringTransactionDao().insertRecurring(
+                recurringTransactionDao.insertRecurring(
                     RecurringTransactionEntity(
                         id = if (mode == BackupRestoreMode.REPLACE_ALL) r.getLong("id") else 0L,
                         title = r.getString("title"),
@@ -316,7 +332,6 @@ class BackupRepositoryImpl @Inject constructor(
                     )
                 )
             }
-        }
         preview
     }
 

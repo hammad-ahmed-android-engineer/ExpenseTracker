@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import com.example.expensetracker.core.common.formatCurrency
 import com.example.expensetracker.core.common.formatCurrencyCompact
 import com.example.expensetracker.core.designsystem.AppDimensions
@@ -53,6 +54,7 @@ fun DonutChart(
     currencyCode: String = "USD",
     showLegend: Boolean = true,
     isPieMode: Boolean = false,
+    legendOnRight: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var selectedSliceIndex by remember { mutableStateOf<Int?>(null) }
@@ -66,13 +68,16 @@ fun DonutChart(
     val total = remember(slices) { slices.sumOf { it.value } }
     val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
 
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    val chartBoxSize = if (legendOnRight) {
+        AppDimensions.components.emptyStateIconContainer * 2.7f
+    } else {
+        AppDimensions.components.emptyStateIconContainer * 3.4f
+    }
+
+    val chartContent: @Composable () -> Unit = {
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(AppDimensions.components.emptyStateIconContainer * 3.4f)
+            modifier = Modifier.size(chartBoxSize)
         ) {
             Canvas(
                 modifier = Modifier
@@ -173,6 +178,13 @@ fun DonutChart(
                         AppTypography.Caption(
                             text = "%.1f%%".format(Locale.US, selected.percentage)
                         )
+                    } else if (centerText.contains("\n") || centerValue == 0L) {
+                        AppTypography.LabelMedium(
+                            text = centerText,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     } else {
                         AppTypography.LabelSmall(
                             text = centerText,
@@ -187,46 +199,87 @@ fun DonutChart(
                 }
             }
         }
+    }
 
-        if (showLegend && slices.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
-                verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
-            ) {
-                slices.take(6).forEachIndexed { index, slice ->
-                    val isSelected = selectedSliceIndex == index
-                    AppSurface(
-                        onClick = {
-                            selectedSliceIndex = if (selectedSliceIndex == index) null else index
-                        },
-                        shape = RoundedCornerShape(AppDimensions.cornerPill),
-                        color = if (isSelected) {
-                            slice.color.copy(alpha = 0.18f)
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainer
-                        }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(
-                                horizontal = AppDimensions.paddingSmall,
-                                vertical = AppDimensions.paddingMicro
-                            ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+    if (legendOnRight) {
+        Row(
+            modifier = modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            chartContent()
+
+            if (showLegend && slices.isNotEmpty()) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
+                    modifier = Modifier.padding(start = AppDimensions.paddingMedium)
+                ) {
+                    slices.take(5).forEach { slice ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(AppDimensions.icons.micro)
+                                    .size(AppDimensions.icons.tiny)
                                     .clip(CircleShape)
                                     .background(slice.color)
                             )
-                            Spacer(modifier = Modifier.width(AppDimensions.paddingMicro))
-                            AppTypography.LabelSmall(
-                                text = "${slice.label} ${"%.0f".format(Locale.US, slice.percentage)}%",
-                                color = MaterialTheme.colorScheme.onSurface,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
+                            AppTypography.BodyMedium(
+                                text = slice.label,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            chartContent()
+
+            if (showLegend && slices.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
+                    verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
+                ) {
+                    slices.take(6).forEachIndexed { index, slice ->
+                        val isSelected = selectedSliceIndex == index
+                        AppSurface(
+                            onClick = {
+                                selectedSliceIndex = if (selectedSliceIndex == index) null else index
+                            },
+                            shape = RoundedCornerShape(AppDimensions.cornerPill),
+                            color = if (isSelected) {
+                                slice.color.copy(alpha = 0.18f)
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainer
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(
+                                    horizontal = AppDimensions.paddingSmall,
+                                    vertical = AppDimensions.paddingMicro
+                                ),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(AppDimensions.icons.micro)
+                                        .clip(CircleShape)
+                                        .background(slice.color)
+                                )
+                                Spacer(modifier = Modifier.width(AppDimensions.paddingMicro))
+                                AppTypography.LabelSmall(
+                                    text = "${slice.label} ${"%.0f".format(Locale.US, slice.percentage)}%",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 }

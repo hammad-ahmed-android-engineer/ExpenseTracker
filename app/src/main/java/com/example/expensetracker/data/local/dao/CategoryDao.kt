@@ -26,6 +26,9 @@ interface CategoryDao {
     @Query("SELECT * FROM categories ORDER BY orderIndex ASC, name ASC")
     fun getAllCategoriesFlow(): Flow<List<CategoryEntity>>
 
+    @Query("SELECT * FROM categories ORDER BY id ASC")
+    suspend fun getAllCategories(): List<CategoryEntity>
+
     @Query("SELECT * FROM categories WHERE type = :type ORDER BY orderIndex ASC, name ASC")
     fun getCategoriesByTypeFlow(type: String): Flow<List<CategoryEntity>>
 
@@ -47,4 +50,10 @@ interface CategoryDao {
 
     @Query("SELECT * FROM subcategories WHERE categoryId = :categoryId ORDER BY name ASC")
     suspend fun getSubcategoriesForCategory(categoryId: Long): List<SubcategoryEntity>
+
+    @Query("DELETE FROM categories")
+    suspend fun deleteAllCategories(): Int
+
+    @Query("DELETE FROM subcategories")
+    suspend fun deleteAllSubcategories(): Int
 }

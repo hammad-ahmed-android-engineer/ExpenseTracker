@@ -68,7 +68,7 @@ fun AddAccountDialog(
                         )
                     }
                 }
-                AppTypography.TitleSmall(text = "Currency")
+                AppTypography.TitleSmall(text = stringResource(R.string.currency_label))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)) {
                     items(SupportedCurrency.entries) { currency ->
                         AppFilterChip(

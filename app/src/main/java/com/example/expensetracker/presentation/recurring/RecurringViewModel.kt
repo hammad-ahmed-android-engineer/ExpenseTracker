@@ -8,10 +8,13 @@ import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.RecurringFrequency
 import com.example.expensetracker.domain.model.RecurringTransaction
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.AccountRepository
-import com.example.expensetracker.domain.repository.CategoryRepository
-import com.example.expensetracker.domain.repository.RecurringTransactionRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.DeleteRecurringTransactionUseCase
+import com.example.expensetracker.domain.usecase.GetAccountsUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
+import com.example.expensetracker.domain.usecase.GetRecurringTransactionsUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
+import com.example.expensetracker.domain.usecase.ProcessDueRecurringTransactionsUseCase
+import com.example.expensetracker.domain.usecase.SaveRecurringTransactionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -32,19 +35,22 @@ data class RecurringUiState(
 
 @HiltViewModel
 class RecurringViewModel @Inject constructor(
-    private val recurringRepository: RecurringTransactionRepository,
-    categoryRepository: CategoryRepository,
-    accountRepository: AccountRepository,
-    userPreferencesRepository: UserPreferencesRepository
+    private val getRecurringTransactionsUseCase: GetRecurringTransactionsUseCase,
+    private val saveRecurringTransactionUseCase: SaveRecurringTransactionUseCase,
+    private val deleteRecurringTransactionUseCase: DeleteRecurringTransactionUseCase,
+    private val processDueRecurringTransactionsUseCase: ProcessDueRecurringTransactionsUseCase,
+    getCategoriesUseCase: GetCategoriesUseCase,
+    getAccountsUseCase: GetAccountsUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     private val _message = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<RecurringUiState> = combine(
-        recurringRepository.getAllRecurring(),
-        categoryRepository.getAllCategories(),
-        accountRepository.getAllActiveAccounts(),
-        userPreferencesRepository.userPreferencesFlow,
+        getRecurringTransactionsUseCase(),
+        getCategoriesUseCase(),
+        getAccountsUseCase.getActiveAccounts(),
+        getUserPreferencesUseCase(),
         _message
     ) { list, cats, accs, prefs, msg ->
         RecurringUiState(
@@ -85,25 +91,25 @@ class RecurringViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            recurringRepository.addRecurring(recurring)
+            saveRecurringTransactionUseCase(recurring)
         }
     }
 
     fun toggleEnable(recurring: RecurringTransaction) {
         viewModelScope.launch {
-            recurringRepository.updateRecurring(recurring.copy(isEnabled = !recurring.isEnabled))
+            saveRecurringTransactionUseCase.updateRecurring(recurring.copy(isEnabled = !recurring.isEnabled))
         }
     }
 
     fun deleteRecurring(recurring: RecurringTransaction) {
         viewModelScope.launch {
-            recurringRepository.deleteRecurring(recurring)
+            deleteRecurringTransactionUseCase(recurring)
         }
     }
 
     fun triggerProcessDueNow() {
         viewModelScope.launch {
-            val count = recurringRepository.processDueRecurringTransactions()
+            val count = processDueRecurringTransactionsUseCase()
             _message.value = if (count > 0) {
                 "$count scheduled transaction(s) generated"
             } else {

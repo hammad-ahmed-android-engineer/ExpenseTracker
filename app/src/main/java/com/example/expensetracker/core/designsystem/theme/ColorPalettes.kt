@@ -184,12 +184,12 @@ private fun buildDarkTheme(
     onTertiaryContainer: Color,
     isAmoled: Boolean
 ): ThemeColors {
-    val bg = if (isAmoled) Color.Black else Color(0xFF0B0F17)
-    val surf = if (isAmoled) Color(0xFF080A0F) else Color(0xFF111723)
-    val surfLow = if (isAmoled) Color(0xFF0E1117) else Color(0xFF161D2B)
-    val surfMed = if (isAmoled) Color(0xFF131720) else Color(0xFF1C2434)
-    val surfHigh = if (isAmoled) Color(0xFF1B202C) else Color(0xFF232C3E)
-    val surfHighest = if (isAmoled) Color(0xFF242A38) else Color(0xFF2C364B)
+    val bg = if (isAmoled) Color.Black else Color(0xFF111319)
+    val surf = if (isAmoled) Color(0xFF080A0F) else Color(0xFF161922)
+    val surfLow = if (isAmoled) Color(0xFF0E1117) else Color(0xFF1C202F)
+    val surfMed = if (isAmoled) Color(0xFF131720) else Color(0xFF22273D)
+    val surfHigh = if (isAmoled) Color(0xFF1B202C) else Color(0xFF282F48)
+    val surfHighest = if (isAmoled) Color(0xFF242A38) else Color(0xFF323B5A)
 
     return ThemeColors(
         primary = primary,
@@ -215,7 +215,7 @@ private fun buildDarkTheme(
         surfaceContainer = surfMed,
         surfaceContainerHigh = surfHigh,
         surfaceContainerHighest = surfHighest,
-        outline = Color(0xFF64748B),
+        outline = Color(0xFF475569),
         outlineVariant = Color(0xFF263042),
         error = Color(0xFFF87171),
         onError = Color(0xFF450A0A),
@@ -226,271 +226,295 @@ private fun buildDarkTheme(
 }
 
 fun ColorPalette.getLightColors(): ThemeColors = when (this) {
-    ColorPalette.OCEAN_BLUE -> buildLightTheme(
-        primary = Color(0xFF155EEF),
-        primaryContainer = Color(0xFFDCE7FF),
-        onPrimaryContainer = Color(0xFF0A2463),
-        secondary = Color(0xFF0E7490),
-        secondaryContainer = Color(0xFFCFFAFE),
-        onSecondaryContainer = Color(0xFF083344),
-        tertiary = Color(0xFF6366F1),
-        tertiaryContainer = Color(0xFFE0E7FF),
-        onTertiaryContainer = Color(0xFF1E1B4B)
-    )
-    ColorPalette.EMERALD_GREEN -> buildLightTheme(
-        primary = Color(0xFF047857),
-        primaryContainer = Color(0xFFD1FAE5),
-        onPrimaryContainer = Color(0xFF022C22),
-        secondary = Color(0xFF0F766E),
-        secondaryContainer = Color(0xFFCCFBF1),
-        onSecondaryContainer = Color(0xFF134E4A),
-        tertiary = Color(0xFF2563EB),
-        tertiaryContainer = Color(0xFFDBEAFE),
-        onTertiaryContainer = Color(0xFF1E3A8A),
-        tintBg = Color(0xFFF5F9F7),
-        tintSurfaceLow = Color(0xFFEDF5F1),
-        tintSurfaceHigh = Color(0xFFE2EDE7)
-    )
-    ColorPalette.PURPLE_VIOLET -> buildLightTheme(
-        primary = Color(0xFF6D28D9),
-        primaryContainer = Color(0xFFEDE9FE),
-        onPrimaryContainer = Color(0xFF2E1065),
-        secondary = Color(0xFF9333EA),
-        secondaryContainer = Color(0xFFF3E8FF),
-        onSecondaryContainer = Color(0xFF3B0764),
-        tertiary = Color(0xFFDB2777),
-        tertiaryContainer = Color(0xFFFCE7F3),
-        onTertiaryContainer = Color(0xFF500724),
-        tintBg = Color(0xFFF8F6FC),
-        tintSurfaceLow = Color(0xFFF2EEF9),
-        tintSurfaceHigh = Color(0xFFE8E2F4)
-    )
-    ColorPalette.SUNSET_ORANGE -> buildLightTheme(
+    ColorPalette.TERRACOTTA -> buildLightTheme(
         primary = Color(0xFFC2410C),
         primaryContainer = Color(0xFFFFEDD5),
         onPrimaryContainer = Color(0xFF431407),
-        secondary = Color(0xFFD97706),
-        secondaryContainer = Color(0xFFFEF3C7),
-        onSecondaryContainer = Color(0xFF451A03),
-        tertiary = Color(0xFFE11D48),
-        tertiaryContainer = Color(0xFFFFE4E6),
-        onTertiaryContainer = Color(0xFF4C0519),
-        tintBg = Color(0xFFFCF8F5),
-        tintSurfaceLow = Color(0xFFF8F0EA),
-        tintSurfaceHigh = Color(0xFFF0E3D8)
+        secondary = Color(0xFFE06D53),
+        secondaryContainer = Color(0xFFFFE4DE),
+        onSecondaryContainer = Color(0xFF3E1208),
+        tertiary = Color(0xFFD97706),
+        tertiaryContainer = Color(0xFFFEF3C7),
+        onTertiaryContainer = Color(0xFF451A03)
     )
-    ColorPalette.ROSE_PINK -> buildLightTheme(
-        primary = Color(0xFFBE185D),
-        primaryContainer = Color(0xFFFCE7F3),
-        onPrimaryContainer = Color(0xFF500724),
-        secondary = Color(0xFF9D174D),
-        secondaryContainer = Color(0xFFFFE4E6),
-        onSecondaryContainer = Color(0xFF4C0519),
-        tertiary = Color(0xFF7C3AED),
-        tertiaryContainer = Color(0xFFEDE9FE),
-        onTertiaryContainer = Color(0xFF2E1065),
-        tintBg = Color(0xFFFCF6F9),
-        tintSurfaceLow = Color(0xFFF7ECF1),
-        tintSurfaceHigh = Color(0xFFEFDDE6)
+    ColorPalette.AMBER -> buildLightTheme(
+        primary = Color(0xFFD97706),
+        primaryContainer = Color(0xFFFEF3C7),
+        onPrimaryContainer = Color(0xFF451A03),
+        secondary = Color(0xFFE68B41),
+        secondaryContainer = Color(0xFFFFE8D6),
+        onSecondaryContainer = Color(0xFF482004),
+        tertiary = Color(0xFFB45309),
+        tertiaryContainer = Color(0xFFFDE68A),
+        onTertiaryContainer = Color(0xFF381A02)
     )
-    ColorPalette.MIDNIGHT -> buildLightTheme(
-        primary = Color(0xFF1E3A8A),
-        primaryContainer = Color(0xFFDBEAFE),
-        onPrimaryContainer = Color(0xFF172554),
-        secondary = Color(0xFF334155),
-        secondaryContainer = Color(0xFFE2E8F0),
-        onSecondaryContainer = Color(0xFF0F172A),
-        tertiary = Color(0xFF0284C7),
-        tertiaryContainer = Color(0xFFE0F2FE),
-        onTertiaryContainer = Color(0xFF082F49)
+    ColorPalette.SAND -> buildLightTheme(
+        primary = Color(0xFFB48A14),
+        primaryContainer = Color(0xFFFEF9C3),
+        onPrimaryContainer = Color(0xFF423203),
+        secondary = Color(0xFFE5B54E),
+        secondaryContainer = Color(0xFFFFF0D0),
+        onSecondaryContainer = Color(0xFF3E2C04),
+        tertiary = Color(0xFFCA8A04),
+        tertiaryContainer = Color(0xFFFEF08A),
+        onTertiaryContainer = Color(0xFF3F2B02)
     )
-    ColorPalette.TEAL -> buildLightTheme(
+    ColorPalette.MINT -> buildLightTheme(
+        primary = Color(0xFF059669),
+        primaryContainer = Color(0xFFD1FAE5),
+        onPrimaryContainer = Color(0xFF022C22),
+        secondary = Color(0xFF8ED6B1),
+        secondaryContainer = Color(0xFFE6F7EF),
+        onSecondaryContainer = Color(0xFF0E3825),
+        tertiary = Color(0xFF0F766E),
+        tertiaryContainer = Color(0xFFCCFBF1),
+        onTertiaryContainer = Color(0xFF134E4A)
+    )
+    ColorPalette.SKY_BLUE -> buildLightTheme(
+        primary = Color(0xFF0284C7),
+        primaryContainer = Color(0xFFE0F2FE),
+        onPrimaryContainer = Color(0xFF082F49),
+        secondary = Color(0xFF6EA8D9),
+        secondaryContainer = Color(0xFFE2EFF9),
+        onSecondaryContainer = Color(0xFF0D2D49),
+        tertiary = Color(0xFF2563EB),
+        tertiaryContainer = Color(0xFFDBEAFE),
+        onTertiaryContainer = Color(0xFF1E3A8A)
+    )
+    ColorPalette.LAVENDER -> buildLightTheme(
+        primary = Color(0xFF6366F1),
+        primaryContainer = Color(0xFFE0E7FF),
+        onPrimaryContainer = Color(0xFF1E1B4B),
+        secondary = Color(0xFFA78BFA),
+        secondaryContainer = Color(0xFFEDE9FE),
+        onSecondaryContainer = Color(0xFF2E1065),
+        tertiary = Color(0xFF8B5CF6),
+        tertiaryContainer = Color(0xFFF3E8FF),
+        onTertiaryContainer = Color(0xFF3B0764)
+    )
+    ColorPalette.OLIVE -> buildLightTheme(
+        primary = Color(0xFF65A30D),
+        primaryContainer = Color(0xFFECFCCB),
+        onPrimaryContainer = Color(0xFF1A2E05),
+        secondary = Color(0xFFA8B150),
+        secondaryContainer = Color(0xFFF3F5DC),
+        onSecondaryContainer = Color(0xFF2A2E08),
+        tertiary = Color(0xFF4D7C0F),
+        tertiaryContainer = Color(0xFFD9F99D),
+        onTertiaryContainer = Color(0xFF142404)
+    )
+    ColorPalette.SAGE -> buildLightTheme(
         primary = Color(0xFF0F766E),
         primaryContainer = Color(0xFFCCFBF1),
         onPrimaryContainer = Color(0xFF042F2E),
-        secondary = Color(0xFF0E7490),
-        secondaryContainer = Color(0xFFCFFAFE),
-        onSecondaryContainer = Color(0xFF083344),
-        tertiary = Color(0xFF059669),
-        tertiaryContainer = Color(0xFFD1FAE5),
-        onTertiaryContainer = Color(0xFF022C22),
-        tintBg = Color(0xFFF4FAFA),
-        tintSurfaceLow = Color(0xFFEBF4F4),
-        tintSurfaceHigh = Color(0xFFDCEBEB)
+        secondary = Color(0xFF74A99C),
+        secondaryContainer = Color(0xFFE2F0ED),
+        onSecondaryContainer = Color(0xFF133730),
+        tertiary = Color(0xFF14B8A6),
+        tertiaryContainer = Color(0xFF99F6E4),
+        onTertiaryContainer = Color(0xFF042F2E)
     )
-    ColorPalette.MONOCHROME -> buildLightTheme(
-        primary = Color(0xFF18181B),
-        primaryContainer = Color(0xFFE4E4E7),
-        onPrimaryContainer = Color(0xFF09090B),
-        secondary = Color(0xFF3F3F46),
-        secondaryContainer = Color(0xFFF4F4F5),
-        onSecondaryContainer = Color(0xFF18181B),
-        tertiary = Color(0xFF52525B),
-        tertiaryContainer = Color(0xFFE4E4E7),
-        onTertiaryContainer = Color(0xFF18181B),
-        tintBg = Color(0xFFFAFAFA),
-        tintSurfaceLow = Color(0xFFF4F4F5),
-        tintSurfaceHigh = Color(0xFFE4E4E7)
+    ColorPalette.ROSE -> buildLightTheme(
+        primary = Color(0xFFBE185D),
+        primaryContainer = Color(0xFFFCE7F3),
+        onPrimaryContainer = Color(0xFF500724),
+        secondary = Color(0xFFD472A5),
+        secondaryContainer = Color(0xFFFAE4EF),
+        onSecondaryContainer = Color(0xFF44122C),
+        tertiary = Color(0xFFDB2777),
+        tertiaryContainer = Color(0xFFFBCFE8),
+        onTertiaryContainer = Color(0xFF500724)
     )
-    ColorPalette.FOREST_GREEN -> buildLightTheme(
-        primary = Color(0xFF166534),
-        primaryContainer = Color(0xFFDCFCE7),
-        onPrimaryContainer = Color(0xFF052E16),
-        secondary = Color(0xFF3F6212),
-        secondaryContainer = Color(0xFFECFCCB),
-        onSecondaryContainer = Color(0xFF1A2E05),
-        tertiary = Color(0xFF0F766E),
-        tertiaryContainer = Color(0xFFCCFBF1),
-        onTertiaryContainer = Color(0xFF042F2E),
-        tintBg = Color(0xFFF5F9F5),
-        tintSurfaceLow = Color(0xFFEDF4ED),
-        tintSurfaceHigh = Color(0xFFE0ECE0)
-    )
-    ColorPalette.CRIMSON_RED -> buildLightTheme(
+    ColorPalette.CRIMSON -> buildLightTheme(
         primary = Color(0xFFB91C1C),
         primaryContainer = Color(0xFFFEE2E2),
         onPrimaryContainer = Color(0xFF450A0A),
-        secondary = Color(0xFF9F1239),
-        secondaryContainer = Color(0xFFFFE4E6),
-        onSecondaryContainer = Color(0xFF4C0519),
-        tertiary = Color(0xFFD97706),
-        tertiaryContainer = Color(0xFFFEF3C7),
-        onTertiaryContainer = Color(0xFF451A03),
-        tintBg = Color(0xFFFCF6F6),
-        tintSurfaceLow = Color(0xFFF7ECEC),
-        tintSurfaceHigh = Color(0xFFEFDFDF)
+        secondary = Color(0xFFDC5775),
+        secondaryContainer = Color(0xFFFBE4E9),
+        onSecondaryContainer = Color(0xFF470C1B),
+        tertiary = Color(0xFFE11D48),
+        tertiaryContainer = Color(0xFFFFE4E6),
+        onTertiaryContainer = Color(0xFF4C0519)
+    )
+    ColorPalette.SLATE -> buildLightTheme(
+        primary = Color(0xFF475569),
+        primaryContainer = Color(0xFFE2E8F0),
+        onPrimaryContainer = Color(0xFF0F172A),
+        secondary = Color(0xFF5C677D),
+        secondaryContainer = Color(0xFFE5E7EB),
+        onSecondaryContainer = Color(0xFF1A1F2B),
+        tertiary = Color(0xFF334155),
+        tertiaryContainer = Color(0xFFCBD5E1),
+        onTertiaryContainer = Color(0xFF0F172A)
+    )
+    ColorPalette.CHARCOAL -> buildLightTheme(
+        primary = Color(0xFF1E293B),
+        primaryContainer = Color(0xFFE2E8F0),
+        onPrimaryContainer = Color(0xFF0F172A),
+        secondary = Color(0xFF2B2D42),
+        secondaryContainer = Color(0xFFDEDFE6),
+        onSecondaryContainer = Color(0xFF10111A),
+        tertiary = Color(0xFF334155),
+        tertiaryContainer = Color(0xFFCBD5E1),
+        onTertiaryContainer = Color(0xFF0F172A)
     )
 }
 
 fun ColorPalette.getDarkColors(isAmoled: Boolean = false): ThemeColors = when (this) {
-    ColorPalette.OCEAN_BLUE -> buildDarkTheme(
-        primary = Color(0xFF7CA7FF),
-        onPrimary = Color(0xFF061B4B),
-        primaryContainer = Color(0xFF133A8E),
-        onPrimaryContainer = Color(0xFFDCE7FF),
-        secondary = Color(0xFF67E8F9),
-        secondaryContainer = Color(0xFF155E75),
-        onSecondaryContainer = Color(0xFFCFFAFE),
-        tertiary = Color(0xFFA5B4FC),
-        tertiaryContainer = Color(0xFF3730A3),
-        onTertiaryContainer = Color(0xFFE0E7FF),
+    ColorPalette.TERRACOTTA -> buildDarkTheme(
+        primary = Color(0xFFE06D53),
+        onPrimary = Color(0xFF3E1208),
+        primaryContainer = Color(0xFF9E3A24),
+        onPrimaryContainer = Color(0xFFFFDBCF),
+        secondary = Color(0xFFFB923C),
+        secondaryContainer = Color(0xFF7C2D12),
+        onSecondaryContainer = Color(0xFFFFEDD5),
+        tertiary = Color(0xFFFBBF24),
+        tertiaryContainer = Color(0xFF78350F),
+        onTertiaryContainer = Color(0xFFFEF3C7),
         isAmoled = isAmoled
     )
-    ColorPalette.EMERALD_GREEN -> buildDarkTheme(
-        primary = Color(0xFF34D399),
-        onPrimary = Color(0xFF022C22),
-        primaryContainer = Color(0xFF065F46),
-        onPrimaryContainer = Color(0xFFD1FAE5),
-        secondary = Color(0xFF5EEAD4),
-        secondaryContainer = Color(0xFF115E59),
-        onSecondaryContainer = Color(0xFFCCFBF1),
+    ColorPalette.AMBER -> buildDarkTheme(
+        primary = Color(0xFFE68B41),
+        onPrimary = Color(0xFF3F1D03),
+        primaryContainer = Color(0xFF9A4D13),
+        onPrimaryContainer = Color(0xFFFFDDC4),
+        secondary = Color(0xFFF59E0B),
+        secondaryContainer = Color(0xFF78350F),
+        onSecondaryContainer = Color(0xFFFEF3C7),
+        tertiary = Color(0xFFFBBF24),
+        tertiaryContainer = Color(0xFF713F12),
+        onTertiaryContainer = Color(0xFFFEF9C3),
+        isAmoled = isAmoled
+    )
+    ColorPalette.SAND -> buildDarkTheme(
+        primary = Color(0xFFE5B54E),
+        onPrimary = Color(0xFF3D2E04),
+        primaryContainer = Color(0xFF8E6B15),
+        onPrimaryContainer = Color(0xFFFFF0CA),
+        secondary = Color(0xFFFBBF24),
+        secondaryContainer = Color(0xFF78350F),
+        onSecondaryContainer = Color(0xFFFEF3C7),
+        tertiary = Color(0xFFFACC15),
+        tertiaryContainer = Color(0xFF713F12),
+        onTertiaryContainer = Color(0xFFFEF9C3),
+        isAmoled = isAmoled
+    )
+    ColorPalette.MINT -> buildDarkTheme(
+        primary = Color(0xFF8ED6B1),
+        onPrimary = Color(0xFF0A3320),
+        primaryContainer = Color(0xFF206E49),
+        onPrimaryContainer = Color(0xFFD4F3E4),
+        secondary = Color(0xFF34D399),
+        secondaryContainer = Color(0xFF065F46),
+        onSecondaryContainer = Color(0xFFD1FAE5),
+        tertiary = Color(0xFF2DD4BF),
+        tertiaryContainer = Color(0xFF115E59),
+        onTertiaryContainer = Color(0xFFCCFBF1),
+        isAmoled = isAmoled
+    )
+    ColorPalette.SKY_BLUE -> buildDarkTheme(
+        primary = Color(0xFF6EA8D9),
+        onPrimary = Color(0xFF082642),
+        primaryContainer = Color(0xFF1D5A8C),
+        onPrimaryContainer = Color(0xFFD4E7F7),
+        secondary = Color(0xFF38BDF8),
+        secondaryContainer = Color(0xFF0369A1),
+        onSecondaryContainer = Color(0xFFE0F2FE),
         tertiary = Color(0xFF60A5FA),
         tertiaryContainer = Color(0xFF1E40AF),
         onTertiaryContainer = Color(0xFFDBEAFE),
         isAmoled = isAmoled
     )
-    ColorPalette.PURPLE_VIOLET -> buildDarkTheme(
-        primary = Color(0xFFC4B5FD),
-        onPrimary = Color(0xFF2E1065),
-        primaryContainer = Color(0xFF4C1D95),
+    ColorPalette.LAVENDER -> buildDarkTheme(
+        primary = Color(0xFFA78BFA),
+        onPrimary = Color(0xFF1E1045),
+        primaryContainer = Color(0xFF4C309C),
         onPrimaryContainer = Color(0xFFEDE9FE),
-        secondary = Color(0xFFD8B4FE),
-        secondaryContainer = Color(0xFF6B21A8),
-        onSecondaryContainer = Color(0xFFF3E8FF),
-        tertiary = Color(0xFFF472B6),
-        tertiaryContainer = Color(0xFF9D174D),
-        onTertiaryContainer = Color(0xFFFCE7F3),
+        secondary = Color(0xFF818CF8),
+        secondaryContainer = Color(0xFF2E3272),
+        onSecondaryContainer = Color(0xFFE0E7FF),
+        tertiary = Color(0xFFC084FC),
+        tertiaryContainer = Color(0xFF581C87),
+        onTertiaryContainer = Color(0xFFF3E8FF),
         isAmoled = isAmoled
     )
-    ColorPalette.SUNSET_ORANGE -> buildDarkTheme(
-        primary = Color(0xFFFB923C),
-        onPrimary = Color(0xFF431407),
-        primaryContainer = Color(0xFF9A3412),
-        onPrimaryContainer = Color(0xFFFFEDD5),
-        secondary = Color(0xFFFBBF24),
-        secondaryContainer = Color(0xFF92400E),
-        onSecondaryContainer = Color(0xFFFEF3C7),
+    ColorPalette.OLIVE -> buildDarkTheme(
+        primary = Color(0xFFA8B150),
+        onPrimary = Color(0xFF232805),
+        primaryContainer = Color(0xFF5E651D),
+        onPrimaryContainer = Color(0xFFECEFC7),
+        secondary = Color(0xFFA3E635),
+        secondaryContainer = Color(0xFF3F6212),
+        onSecondaryContainer = Color(0xFFECFCCB),
+        tertiary = Color(0xFF84CC16),
+        tertiaryContainer = Color(0xFF365314),
+        onTertiaryContainer = Color(0xFFD9F99D),
+        isAmoled = isAmoled
+    )
+    ColorPalette.SAGE -> buildDarkTheme(
+        primary = Color(0xFF74A99C),
+        onPrimary = Color(0xFF0F2A24),
+        primaryContainer = Color(0xFF2D6155),
+        onPrimaryContainer = Color(0xFFD1EAE4),
+        secondary = Color(0xFF2DD4BF),
+        secondaryContainer = Color(0xFF115E59),
+        onSecondaryContainer = Color(0xFFCCFBF1),
+        tertiary = Color(0xFF5EEAD4),
+        tertiaryContainer = Color(0xFF0F766E),
+        onTertiaryContainer = Color(0xFFCCFBF1),
+        isAmoled = isAmoled
+    )
+    ColorPalette.ROSE -> buildDarkTheme(
+        primary = Color(0xFFD472A5),
+        onPrimary = Color(0xFF3B0C25),
+        primaryContainer = Color(0xFF8A2E5F),
+        onPrimaryContainer = Color(0xFFF7D9EA),
+        secondary = Color(0xFFF472B6),
+        secondaryContainer = Color(0xFF831843),
+        onSecondaryContainer = Color(0xFFFCE7F3),
+        tertiary = Color(0xFFFB7185),
+        tertiaryContainer = Color(0xFF881337),
+        onTertiaryContainer = Color(0xFFFFE4E6),
+        isAmoled = isAmoled
+    )
+    ColorPalette.CRIMSON -> buildDarkTheme(
+        primary = Color(0xFFDC5775),
+        onPrimary = Color(0xFF3F0B18),
+        primaryContainer = Color(0xFF8E223D),
+        onPrimaryContainer = Color(0xFFF9D5DE),
+        secondary = Color(0xFFF43F5E),
+        secondaryContainer = Color(0xFF881337),
+        onSecondaryContainer = Color(0xFFFFE4E6),
         tertiary = Color(0xFFFB7185),
         tertiaryContainer = Color(0xFF9F1239),
         onTertiaryContainer = Color(0xFFFFE4E6),
         isAmoled = isAmoled
     )
-    ColorPalette.ROSE_PINK -> buildDarkTheme(
-        primary = Color(0xFFF472B6),
-        onPrimary = Color(0xFF500724),
-        primaryContainer = Color(0xFF9D174D),
-        onPrimaryContainer = Color(0xFFFCE7F3),
-        secondary = Color(0xFFFB7185),
-        secondaryContainer = Color(0xFF881337),
-        onSecondaryContainer = Color(0xFFFFE4E6),
-        tertiary = Color(0xFFC4B5FD),
-        tertiaryContainer = Color(0xFF5B21B6),
-        onTertiaryContainer = Color(0xFFEDE9FE),
-        isAmoled = isAmoled
-    )
-    ColorPalette.MIDNIGHT -> buildDarkTheme(
-        primary = Color(0xFF93C5FD),
-        onPrimary = Color(0xFF172554),
-        primaryContainer = Color(0xFF1E3A8A),
-        onPrimaryContainer = Color(0xFFDBEAFE),
+    ColorPalette.SLATE -> buildDarkTheme(
+        primary = Color(0xFF94A3B8),
+        onPrimary = Color(0xFF0F172A),
+        primaryContainer = Color(0xFF334155),
+        onPrimaryContainer = Color(0xFFF1F5F9),
         secondary = Color(0xFFCBD5E1),
-        secondaryContainer = Color(0xFF334155),
+        secondaryContainer = Color(0xFF475569),
+        onSecondaryContainer = Color(0xFFF8FAFC),
+        tertiary = Color(0xFF64748B),
+        tertiaryContainer = Color(0xFF1E293B),
+        onTertiaryContainer = Color(0xFFE2E8F0),
+        isAmoled = isAmoled
+    )
+    ColorPalette.CHARCOAL -> buildDarkTheme(
+        primary = Color(0xFF818CF8),
+        onPrimary = Color(0xFF1E1B4B),
+        primaryContainer = Color(0xFF2B2D42),
+        onPrimaryContainer = Color(0xFFE0E7FF),
+        secondary = Color(0xFF94A3B8),
+        secondaryContainer = Color(0xFF1E293B),
         onSecondaryContainer = Color(0xFFF1F5F9),
-        tertiary = Color(0xFF38BDF8),
-        tertiaryContainer = Color(0xFF075985),
-        onTertiaryContainer = Color(0xFFE0F2FE),
-        isAmoled = isAmoled
-    )
-    ColorPalette.TEAL -> buildDarkTheme(
-        primary = Color(0xFF5EEAD4),
-        onPrimary = Color(0xFF042F2E),
-        primaryContainer = Color(0xFF115E59),
-        onPrimaryContainer = Color(0xFFCCFBF1),
-        secondary = Color(0xFF67E8F9),
-        secondaryContainer = Color(0xFF155E75),
-        onSecondaryContainer = Color(0xFFCFFAFE),
-        tertiary = Color(0xFF6EE7B7),
-        tertiaryContainer = Color(0xFF065F46),
-        onTertiaryContainer = Color(0xFFD1FAE5),
-        isAmoled = isAmoled
-    )
-    ColorPalette.MONOCHROME -> buildDarkTheme(
-        primary = Color(0xFFF4F4F5),
-        onPrimary = Color(0xFF09090B),
-        primaryContainer = Color(0xFF27272A),
-        onPrimaryContainer = Color(0xFFF4F4F5),
-        secondary = Color(0xFFD4D4D8),
-        secondaryContainer = Color(0xFF3F3F46),
-        onSecondaryContainer = Color(0xFFFAFAFA),
-        tertiary = Color(0xFFA1A1AA),
-        tertiaryContainer = Color(0xFF3F3F46),
-        onTertiaryContainer = Color(0xFFF4F4F5),
-        isAmoled = isAmoled
-    )
-    ColorPalette.FOREST_GREEN -> buildDarkTheme(
-        primary = Color(0xFF86EFAC),
-        onPrimary = Color(0xFF052E16),
-        primaryContainer = Color(0xFF166534),
-        onPrimaryContainer = Color(0xFFDCFCE7),
-        secondary = Color(0xFFBEF264),
-        secondaryContainer = Color(0xFF3F6212),
-        onSecondaryContainer = Color(0xFFECFCCB),
-        tertiary = Color(0xFF5EEAD4),
-        tertiaryContainer = Color(0xFF115E59),
-        onTertiaryContainer = Color(0xFFCCFBF1),
-        isAmoled = isAmoled
-    )
-    ColorPalette.CRIMSON_RED -> buildDarkTheme(
-        primary = Color(0xFFFCA5A5),
-        onPrimary = Color(0xFF450A0A),
-        primaryContainer = Color(0xFF991B1B),
-        onPrimaryContainer = Color(0xFFFEE2E2),
-        secondary = Color(0xFFFDA4AF),
-        secondaryContainer = Color(0xFF9F1239),
-        onSecondaryContainer = Color(0xFFFFE4E6),
-        tertiary = Color(0xFFFCD34D),
-        tertiaryContainer = Color(0xFF92400E),
-        onTertiaryContainer = Color(0xFFFEF3C7),
+        tertiary = Color(0xFFA5B4FC),
+        tertiaryContainer = Color(0xFF312E81),
+        onTertiaryContainer = Color(0xFFEDE9FE),
         isAmoled = isAmoled
     )
 }

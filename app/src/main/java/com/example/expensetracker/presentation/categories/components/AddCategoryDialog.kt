@@ -53,17 +53,17 @@ fun AddCategoryDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = "New ${type.displayName} Category",
+        title = stringResource(R.string.new_category_title, type.displayName),
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)) {
                 AppOutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { AppTypography.LabelMedium(text = "Category Name") },
+                    label = { AppTypography.LabelMedium(text = stringResource(R.string.category_name_label)) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                AppTypography.TitleSmall(text = "Color")
+                AppTypography.TitleSmall(text = stringResource(R.string.color_label))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
@@ -88,7 +88,7 @@ fun AddCategoryDialog(
                     }
                 }
 
-                AppTypography.TitleSmall(text = "Icon")
+                AppTypography.TitleSmall(text = stringResource(R.string.icon_label))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro),
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)

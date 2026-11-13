@@ -1,8 +1,14 @@
 package com.example.expensetracker.data.local.database
 
-import androidx.room.withTransaction
 import com.example.expensetracker.core.common.endOfMonthMillis
 import com.example.expensetracker.core.common.startOfMonthMillis
+import com.example.expensetracker.data.local.dao.AccountDao
+import com.example.expensetracker.data.local.dao.BudgetDao
+import com.example.expensetracker.data.local.dao.CategoryDao
+import com.example.expensetracker.data.local.dao.RecurringTransactionDao
+import com.example.expensetracker.data.local.dao.SavingsGoalDao
+import com.example.expensetracker.data.local.dao.TransactionDao
+import com.example.expensetracker.data.local.entity.BudgetCategoryEntity
 import com.example.expensetracker.data.local.entity.BudgetEntity
 import com.example.expensetracker.data.local.entity.RecurringTransactionEntity
 import com.example.expensetracker.data.local.entity.SavingsGoalEntity
@@ -15,87 +21,139 @@ import javax.inject.Singleton
 
 @Singleton
 class SampleDataGenerator @Inject constructor(
-    private val database: ExpenseTrackerDatabase
+    private val transactionDao: TransactionDao,
+    private val accountDao: AccountDao,
+    private val categoryDao: CategoryDao,
+    private val budgetDao: BudgetDao,
+    private val savingsDao: SavingsGoalDao,
+    private val recurringDao: RecurringTransactionDao
 ) {
-    suspend fun generateSampleData() {
-        val transactionDao = database.transactionDao()
-        val accountDao = database.accountDao()
-        val categoryDao = database.categoryDao()
-        val budgetDao = database.budgetDao()
-        val savingsDao = database.savingsGoalDao()
-        val recurringDao = database.recurringTransactionDao()
 
+    suspend fun generateSampleData() {
         if (categoryDao.getCategoryCount() == 0) {
             categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
             categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
         }
-        val existingAccounts = accountDao.getAccountById(1L)
-        if (existingAccounts == null) {
+        val existingAccounts = accountDao.getAllAccounts()
+        if (existingAccounts.isEmpty()) {
             for (account in DefaultData.defaultAccounts) {
                 accountDao.insertAccount(account)
             }
         }
 
+        val accounts = accountDao.getAllAccounts()
+        val categories = categoryDao.getAllCategories()
+        if (accounts.isEmpty() || categories.isEmpty()) return
+
+        val checkingAcc = accounts.find { it.name.contains("Checking", ignoreCase = true) }?.id ?: accounts.first().id
+        val cashAcc = accounts.find { it.name.contains("Cash", ignoreCase = true) }?.id ?: accounts.getOrNull(1)?.id ?: checkingAcc
+        val savingsAcc = accounts.find { it.name.contains("Savings", ignoreCase = true) }?.id ?: accounts.getOrNull(2)?.id ?: checkingAcc
+
+        val foodCat = categories.find { it.name.contains("Food", ignoreCase = true) }?.id ?: categories.first().id
+        val utilCat = categories.find { it.name.contains("Utilities", ignoreCase = true) }?.id ?: categories.first().id
+        val entCat = categories.find { it.name.contains("Entertainment", ignoreCase = true) }?.id ?: categories.first().id
+        val transCat = categories.find { it.name.contains("Transport", ignoreCase = true) }?.id ?: categories.first().id
+        val rentCat = categories.find { it.name.contains("Housing", ignoreCase = true) || it.name.contains("Rent", ignoreCase = true) }?.id ?: categories.first().id
+        val otherCat = categories.find { it.name.contains("Other", ignoreCase = true) || it.name.contains("Bills", ignoreCase = true) }?.id ?: categories.first().id
+        val salaryCat = categories.find { it.name.contains("Salary", ignoreCase = true) }?.id ?: categories.first().id
+        val freelanceCat = categories.find { it.name.contains("Freelanc", ignoreCase = true) }?.id ?: salaryCat
+        val investCat = categories.find { it.name.contains("Invest", ignoreCase = true) }?.id ?: salaryCat
+
         val now = System.currentTimeMillis()
         val dayMillis = 24 * 60 * 60 * 1000L
 
         val samples = listOf(
-            TransactionEntity(title = "Monthly Salary Deposit", amount = 450000L, type = TransactionType.INCOME.name, categoryId = 17, accountId = 2, date = now - (dayMillis * 1), paymentMethod = "BANK_TRANSFER", note = "Base Salary"),
-            TransactionEntity(title = "Whole Foods Market", amount = 14550L, type = TransactionType.EXPENSE.name, categoryId = 2, accountId = 1, date = now - (dayMillis * 2), paymentMethod = "CARD", note = "Weekly groceries"),
-            TransactionEntity(title = "Bistro Olive Dinner", amount = 8900L, type = TransactionType.EXPENSE.name, categoryId = 1, accountId = 1, date = now - (dayMillis * 3), paymentMethod = "CARD", note = "Dinner with friends"),
-            TransactionEntity(title = "Metro & Uber Rides", amount = 3450L, type = TransactionType.EXPENSE.name, categoryId = 3, accountId = 1, date = now - (dayMillis * 3), paymentMethod = "DIGITAL_WALLET"),
-            TransactionEntity(title = "Apartment Rent", amount = 120000L, type = TransactionType.EXPENSE.name, categoryId = 8, accountId = 2, date = now - (dayMillis * 5), paymentMethod = "BANK_TRANSFER", note = "Monthly rent"),
-            TransactionEntity(title = "Electric & Fiber Internet", amount = 11500L, type = TransactionType.EXPENSE.name, categoryId = 9, accountId = 2, date = now - (dayMillis * 6), paymentMethod = "BANK_TRANSFER"),
-            TransactionEntity(title = "Freelance Design Sprint", amount = 95000L, type = TransactionType.INCOME.name, categoryId = 18, accountId = 2, date = now - (dayMillis * 7), paymentMethod = "BANK_TRANSFER"),
-            TransactionEntity(title = "Streaming Bundle", amount = 1999L, type = TransactionType.EXPENSE.name, categoryId = 11, accountId = 2, date = now - (dayMillis * 8), paymentMethod = "CARD"),
-            TransactionEntity(title = "City Pharmacy", amount = 4200L, type = TransactionType.EXPENSE.name, categoryId = 6, accountId = 1, date = now - (dayMillis * 9), paymentMethod = "CASH"),
-            TransactionEntity(title = "Kotlin Architecture Book", amount = 5400L, type = TransactionType.EXPENSE.name, categoryId = 7, accountId = 2, date = now - (dayMillis * 10), paymentMethod = "CARD"),
-            TransactionEntity(title = "Apparel & Footwear", amount = 18500L, type = TransactionType.EXPENSE.name, categoryId = 4, accountId = 2, date = now - (dayMillis * 12), paymentMethod = "CARD"),
-            TransactionEntity(title = "Coffee & Bakery", amount = 1650L, type = TransactionType.EXPENSE.name, categoryId = 1, accountId = 1, date = now - (dayMillis * 14), paymentMethod = "CASH")
+            TransactionEntity(title = "Salary", amount = 435000L, type = TransactionType.INCOME.name, categoryId = salaryCat, accountId = checkingAcc, date = now - (dayMillis * 1), paymentMethod = "BANK_TRANSFER", note = "Tech Corp Payroll"),
+            TransactionEntity(title = "Food", amount = 4550L, type = TransactionType.EXPENSE.name, categoryId = foodCat, accountId = cashAcc, date = now - (dayMillis * 1), paymentMethod = "CASH", note = "Oct • Savoir"),
+            TransactionEntity(title = "Utilities", amount = 4250L, type = TransactionType.EXPENSE.name, categoryId = utilCat, accountId = checkingAcc, date = now - (dayMillis * 2), paymentMethod = "CARD", note = "Power & gas"),
+            TransactionEntity(title = "Freelance Project", amount = 85000L, type = TransactionType.INCOME.name, categoryId = freelanceCat, accountId = checkingAcc, date = now - (dayMillis * 3), paymentMethod = "BANK_TRANSFER", note = "Mobile App Design"),
+            TransactionEntity(title = "Entertainment", amount = 9000L, type = TransactionType.EXPENSE.name, categoryId = entCat, accountId = checkingAcc, date = now - (dayMillis * 3), paymentMethod = "CARD", note = "Emriction inanitlogs"),
+            TransactionEntity(title = "Transport", amount = 4250L, type = TransactionType.EXPENSE.name, categoryId = transCat, accountId = cashAcc, date = now - (dayMillis * 4), paymentMethod = "CARD"),
+            TransactionEntity(title = "Transfers", amount = 1050L, type = TransactionType.EXPENSE.name, categoryId = otherCat, accountId = cashAcc, date = now - (dayMillis * 5), paymentMethod = "BANK_TRANSFER"),
+            TransactionEntity(title = "Transfer", amount = 30000L, type = TransactionType.TRANSFER.name, categoryId = otherCat, accountId = savingsAcc, destinationAccountId = checkingAcc, date = now - (dayMillis * 6), paymentMethod = "BANK_TRANSFER", note = "checking"),
+            TransactionEntity(title = "Transfer", amount = 30000L, type = TransactionType.TRANSFER.name, categoryId = otherCat, accountId = savingsAcc, destinationAccountId = checkingAcc, date = now - (dayMillis * 7), paymentMethod = "BANK_TRANSFER", note = "checking"),
+            TransactionEntity(title = "Rent", amount = 120000L, type = TransactionType.EXPENSE.name, categoryId = rentCat, accountId = checkingAcc, date = now - (dayMillis * 8), paymentMethod = "BANK_TRANSFER"),
+            TransactionEntity(title = "Investment Dividend", amount = 15000L, type = TransactionType.INCOME.name, categoryId = investCat, accountId = savingsAcc, date = now - (dayMillis * 10), paymentMethod = "BANK_TRANSFER", note = "Quarterly dividend")
         )
 
-        database.withTransaction {
-            samples.forEach { tx ->
-                transactionDao.insertTransaction(tx)
-                val delta = if (tx.type == TransactionType.INCOME.name) tx.amount else -tx.amount
-                accountDao.updateAccountBalance(tx.accountId, delta)
+        samples.forEach { tx ->
+            transactionDao.insertTransaction(tx)
+            when (tx.type) {
+                TransactionType.INCOME.name -> accountDao.updateAccountBalance(tx.accountId, tx.amount)
+                TransactionType.EXPENSE.name -> accountDao.updateAccountBalance(tx.accountId, -tx.amount)
+                TransactionType.TRANSFER.name -> {
+                    accountDao.updateAccountBalance(tx.accountId, -tx.amount)
+                    tx.destinationAccountId?.let { destId ->
+                        accountDao.updateAccountBalance(destId, tx.amount)
+                    }
+                }
             }
+        }
 
-            val cal = Calendar.getInstance()
+        val cal = Calendar.getInstance()
             val year = cal.get(Calendar.YEAR)
             val month = cal.get(Calendar.MONTH)
-            budgetDao.insertBudget(
+            val b1Id = budgetDao.insertBudget(
                 BudgetEntity(
-                    name = "Monthly Living Budget",
-                    amountLimit = 250000L,
+                    name = "Groceries",
+                    amountLimit = 35000L,
                     periodType = "MONTHLY",
                     startDate = month.startOfMonthMillis(year),
                     endDate = month.endOfMonthMillis(year),
                     notifyThreshold = 80
                 )
             )
+            budgetDao.insertBudgetCategories(
+                listOf(
+                    BudgetCategoryEntity(
+                        budgetId = b1Id,
+                        categoryId = foodCat,
+                        categoryLimit = 35000L
+                    )
+                )
+            )
+
+            val b2Id = budgetDao.insertBudget(
+                BudgetEntity(
+                    name = "Entertainment",
+                    amountLimit = 10000L,
+                    periodType = "MONTHLY",
+                    startDate = month.startOfMonthMillis(year),
+                    endDate = month.endOfMonthMillis(year),
+                    notifyThreshold = 90
+                )
+            )
+            budgetDao.insertBudgetCategories(
+                listOf(
+                    BudgetCategoryEntity(
+                        budgetId = b2Id,
+                        categoryId = entCat,
+                        categoryLimit = 10000L
+                    )
+                )
+            )
 
             val targetCal = (cal.clone() as Calendar).apply { add(Calendar.MONTH, 6) }
             savingsDao.insertGoal(
                 SavingsGoalEntity(
-                    title = "Emergency Reserve",
-                    targetAmount = 500000L,
-                    currentAmount = 175000L,
+                    title = "New Laptop",
+                    targetAmount = 100000L,
+                    currentAmount = 80000L,
                     targetDate = targetCal.timeInMillis,
-                    iconName = "Security",
-                    colorHex = "#0EA5E9",
-                    description = "6-month safety cushion"
+                    iconName = "Laptop",
+                    colorHex = "#2DD4BF",
+                    description = "Work machine upgrade"
                 )
             )
             savingsDao.insertGoal(
                 SavingsGoalEntity(
-                    title = "Kyoto Autumn Trip",
-                    targetAmount = 240000L,
-                    currentAmount = 92000L,
+                    title = "Emergency Fund",
+                    targetAmount = 1000000L,
+                    currentAmount = 500000L,
                     targetDate = targetCal.timeInMillis,
-                    iconName = "Flight",
-                    colorHex = "#10B981",
-                    description = "Flights and rail pass"
+                    iconName = "Security",
+                    colorHex = "#F87171",
+                    description = "Safety reserve"
                 )
             )
 
@@ -126,17 +184,80 @@ class SampleDataGenerator @Inject constructor(
                     isEnabled = true
                 )
             )
+    }
+
+    suspend fun seedIncomeIfEmpty() {
+        val accounts = accountDao.getAllAccounts()
+        val categories = categoryDao.getAllCategories()
+        if (accounts.isEmpty() || categories.isEmpty()) return
+
+        val checkingAcc = accounts.find { it.name.contains("Checking", ignoreCase = true) }?.id ?: accounts.first().id
+        val savingsAcc = accounts.find { it.name.contains("Savings", ignoreCase = true) }?.id ?: accounts.getOrNull(2)?.id ?: checkingAcc
+
+        val salaryCat = categories.find { it.name.contains("Salary", ignoreCase = true) }?.id ?: categories.first().id
+        val freelanceCat = categories.find { it.name.contains("Freelanc", ignoreCase = true) }?.id ?: salaryCat
+        val investCat = categories.find { it.name.contains("Invest", ignoreCase = true) }?.id ?: salaryCat
+
+        val now = System.currentTimeMillis()
+        val dayMillis = 24 * 60 * 60 * 1000L
+
+        val incomeCount = transactionDao.getTransactionCountByType(TransactionType.INCOME.name)
+        if (incomeCount == 0) {
+            val incomeSamples = listOf(
+                TransactionEntity(
+                    title = "Salary",
+                    amount = 435000L,
+                    type = TransactionType.INCOME.name,
+                    categoryId = salaryCat,
+                    accountId = checkingAcc,
+                    date = now - (dayMillis * 1),
+                    paymentMethod = "BANK_TRANSFER",
+                    note = "Tech Corp Payroll"
+                ),
+                TransactionEntity(
+                    title = "Freelance Project",
+                    amount = 85000L,
+                    type = TransactionType.INCOME.name,
+                    categoryId = freelanceCat,
+                    accountId = checkingAcc,
+                    date = now - (dayMillis * 3),
+                    paymentMethod = "BANK_TRANSFER",
+                    note = "Mobile App Design"
+                ),
+                TransactionEntity(
+                    title = "Investment Dividend",
+                    amount = 15000L,
+                    type = TransactionType.INCOME.name,
+                    categoryId = investCat,
+                    accountId = savingsAcc,
+                    date = now - (dayMillis * 10),
+                    paymentMethod = "BANK_TRANSFER",
+                    note = "Quarterly dividend"
+                )
+            )
+
+            incomeSamples.forEach { tx ->
+                transactionDao.insertTransaction(tx)
+                accountDao.updateAccountBalance(tx.accountId, tx.amount)
+            }
         }
     }
 
     suspend fun clearAllUserData() {
-        database.withTransaction {
-            database.clearAllTables()
-            database.categoryDao().insertCategories(DefaultData.defaultExpenseCategories)
-            database.categoryDao().insertCategories(DefaultData.defaultIncomeCategories)
-            for (account in DefaultData.defaultAccounts) {
-                database.accountDao().insertAccount(account)
-            }
+        transactionDao.deleteAllTransactions()
+        budgetDao.deleteAllBudgetCategories()
+        budgetDao.deleteAllBudgets()
+        savingsDao.deleteAllContributions()
+        savingsDao.deleteAllGoals()
+        recurringDao.deleteAllRecurring()
+        accountDao.deleteAllAccounts()
+        categoryDao.deleteAllSubcategories()
+        categoryDao.deleteAllCategories()
+
+        categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
+        categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
+        for (account in DefaultData.defaultAccounts) {
+            accountDao.insertAccount(account)
         }
     }
 }

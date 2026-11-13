@@ -25,9 +25,15 @@ interface AccountDao {
     @Query("SELECT * FROM accounts ORDER BY isArchived ASC, name ASC")
     fun getAllAccountsFlow(): Flow<List<AccountEntity>>
 
+    @Query("SELECT * FROM accounts ORDER BY id ASC")
+    suspend fun getAllAccounts(): List<AccountEntity>
+
     @Query("SELECT COALESCE(SUM(currentBalance), 0) FROM accounts WHERE isArchived = 0")
     fun getTotalBalanceFlow(): Flow<Long>
 
     @Query("UPDATE accounts SET currentBalance = currentBalance + :delta WHERE id = :accountId")
     suspend fun updateAccountBalance(accountId: Long, delta: Long): Int
+
+    @Query("DELETE FROM accounts")
+    suspend fun deleteAllAccounts(): Int
 }

@@ -10,9 +10,17 @@ import com.example.expensetracker.domain.model.BudgetPeriodType
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.CategoryLimit
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.BudgetRepository
-import com.example.expensetracker.domain.repository.CategoryRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.model.SavingsContribution
+import com.example.expensetracker.domain.model.SavingsGoal
+import com.example.expensetracker.domain.usecase.AddSavingsContributionUseCase
+import com.example.expensetracker.domain.usecase.AddSavingsGoalUseCase
+import com.example.expensetracker.domain.usecase.DeleteBudgetUseCase
+import com.example.expensetracker.domain.usecase.DeleteSavingsGoalUseCase
+import com.example.expensetracker.domain.usecase.GetBudgetsUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
+import com.example.expensetracker.domain.usecase.GetSavingsGoalsUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
+import com.example.expensetracker.domain.usecase.SaveBudgetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,25 +33,34 @@ import javax.inject.Inject
 data class BudgetsUiState(
     val isLoading: Boolean = true,
     val budgets: List<Budget> = emptyList(),
+    val savingsGoals: List<SavingsGoal> = emptyList(),
     val expenseCategories: List<Category> = emptyList(),
     val currencyCode: String = "USD"
 )
 
 @HiltViewModel
 class BudgetViewModel @Inject constructor(
-    private val budgetRepository: BudgetRepository,
-    categoryRepository: CategoryRepository,
-    userPreferencesRepository: UserPreferencesRepository
+    private val getBudgetsUseCase: GetBudgetsUseCase,
+    private val saveBudgetUseCase: SaveBudgetUseCase,
+    private val deleteBudgetUseCase: DeleteBudgetUseCase,
+    private val getSavingsGoalsUseCase: GetSavingsGoalsUseCase,
+    private val addSavingsGoalUseCase: AddSavingsGoalUseCase,
+    private val addSavingsContributionUseCase: AddSavingsContributionUseCase,
+    private val deleteSavingsGoalUseCase: DeleteSavingsGoalUseCase,
+    getCategoriesUseCase: GetCategoriesUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<BudgetsUiState> = combine(
-        budgetRepository.getAllBudgets(),
-        categoryRepository.getCategoriesByType(TransactionType.EXPENSE),
-        userPreferencesRepository.userPreferencesFlow
-    ) { bList, cats, prefs ->
+        getBudgetsUseCase(),
+        getSavingsGoalsUseCase(),
+        getCategoriesUseCase.getByType(TransactionType.EXPENSE),
+        getUserPreferencesUseCase()
+    ) { bList, goals, cats, prefs ->
         BudgetsUiState(
             isLoading = false,
             budgets = bList,
+            savingsGoals = goals,
             expenseCategories = cats,
             currencyCode = prefs.defaultCurrency
         )
@@ -116,13 +133,75 @@ class BudgetViewModel @Inject constructor(
         } else emptyList()
 
         viewModelScope.launch {
-            budgetRepository.addBudget(budget, catLimits)
+            saveBudgetUseCase(budget, catLimits)
         }
     }
 
     fun deleteBudget(budget: Budget) {
         viewModelScope.launch {
-            budgetRepository.deleteBudget(budget)
+            deleteBudgetUseCase(budget)
+        }
+    }
+
+    fun addSavingsGoal(
+        title: String,
+        targetAmountString: String,
+        targetDate: Long = System.currentTimeMillis() + 86400000L * 180L,
+        iconName: String = "Savings",
+        colorHex: String = "#2DD4BF",
+        description: String? = null,
+        initialDepositString: String? = null
+    ) {
+        val target = targetAmountString.toMinorUnits()
+        if (target <= 0L) return
+        val initialDeposit = initialDepositString?.toMinorUnits() ?: 0L
+        viewModelScope.launch {
+            val goalId = addSavingsGoalUseCase(
+                SavingsGoal(
+                    title = title.trim(),
+                    targetAmount = target,
+                    currentAmount = initialDeposit,
+                    targetDate = targetDate,
+                    iconName = iconName,
+                    colorHex = colorHex,
+                    description = description
+                )
+            )
+            if (initialDeposit > 0L) {
+                addSavingsContributionUseCase(
+                    goalId = goalId,
+                    contribution = SavingsContribution(
+                        goalId = goalId,
+                        amount = initialDeposit,
+                        type = "DEPOSIT",
+                        date = System.currentTimeMillis(),
+                        note = "Initial deposit"
+                    )
+                )
+            }
+        }
+    }
+
+    fun deleteSavingsGoal(goal: SavingsGoal) {
+        viewModelScope.launch {
+            deleteSavingsGoalUseCase(goal)
+        }
+    }
+
+    fun addFundsToGoal(goalId: Long, amountString: String, note: String = "Added funds") {
+        val amount = amountString.toMinorUnits()
+        if (amount <= 0) return
+        viewModelScope.launch {
+            addSavingsContributionUseCase(
+                goalId = goalId,
+                contribution = SavingsContribution(
+                    goalId = goalId,
+                    amount = amount,
+                    type = "DEPOSIT",
+                    date = System.currentTimeMillis(),
+                    note = note
+                )
+            )
         }
     }
 }

@@ -10,9 +10,9 @@ import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Subcategory
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.AccountRepository
-import com.example.expensetracker.domain.repository.CategoryRepository
-import com.example.expensetracker.domain.repository.TransactionRepository
+import com.example.expensetracker.domain.usecase.GetAccountsUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
+import com.example.expensetracker.domain.usecase.GetTransactionByIdUseCase
 import com.example.expensetracker.domain.usecase.SaveTransactionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,9 +44,9 @@ data class AddEditTransactionUiState(
 
 @HiltViewModel
 class AddEditTransactionViewModel @Inject constructor(
-    private val transactionRepository: TransactionRepository,
-    private val categoryRepository: CategoryRepository,
-    private val accountRepository: AccountRepository,
+    private val getTransactionByIdUseCase: GetTransactionByIdUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val getAccountsUseCase: GetAccountsUseCase,
     private val saveTransactionUseCase: SaveTransactionUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -66,8 +66,8 @@ class AddEditTransactionViewModel @Inject constructor(
     private fun loadCategoriesAndAccounts() {
         viewModelScope.launch {
             combine(
-                categoryRepository.getAllCategories(),
-                accountRepository.getAllActiveAccounts()
+                getCategoriesUseCase(),
+                getAccountsUseCase.getActiveAccounts()
             ) { cats, accs -> cats to accs }
                 .collect { (cats, accs) ->
                     _uiState.update { state ->
@@ -91,10 +91,10 @@ class AddEditTransactionViewModel @Inject constructor(
 
     private fun loadTransaction(id: Long) {
         viewModelScope.launch {
-            val tx = transactionRepository.getTransactionById(id) ?: return@launch
-            val cat = categoryRepository.getCategoryById(tx.categoryId)
-            val acc = accountRepository.getAccountById(tx.accountId)
-            val destAcc = tx.destinationAccountId?.let { accountRepository.getAccountById(it) }
+            val tx = getTransactionByIdUseCase(id) ?: return@launch
+            val cat = getCategoriesUseCase.getCategoryById(tx.categoryId)
+            val acc = getAccountsUseCase.getAccountById(tx.accountId)
+            val destAcc = tx.destinationAccountId?.let { getAccountsUseCase.getAccountById(it) }
             val sub = cat?.subcategories?.find { it.id == tx.subcategoryId }
 
             _uiState.update {

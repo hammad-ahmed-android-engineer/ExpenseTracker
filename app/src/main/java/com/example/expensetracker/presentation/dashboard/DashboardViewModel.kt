@@ -8,11 +8,12 @@ import com.example.expensetracker.domain.model.FinancialInsight
 import com.example.expensetracker.domain.model.FinancialSummary
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.UserPreferences
-import com.example.expensetracker.domain.repository.AccountRepository
-import com.example.expensetracker.domain.repository.TransactionRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
 import com.example.expensetracker.domain.usecase.GenerateFinancialInsightsUseCase
+import com.example.expensetracker.domain.usecase.GetAccountsUseCase
+import com.example.expensetracker.domain.usecase.GetAllTransactionsUseCase
 import com.example.expensetracker.domain.usecase.GetDashboardSummaryUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
+import com.example.expensetracker.domain.usecase.UpdateUserPreferencesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -34,17 +35,18 @@ data class DashboardUiState(
 class DashboardViewModel @Inject constructor(
     getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
     generateFinancialInsightsUseCase: GenerateFinancialInsightsUseCase,
-    accountRepository: AccountRepository,
-    transactionRepository: TransactionRepository,
-    private val userPreferencesRepository: UserPreferencesRepository
+    getAccountsUseCase: GetAccountsUseCase,
+    getAllTransactionsUseCase: GetAllTransactionsUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase,
+    private val updateUserPreferencesUseCase: UpdateUserPreferencesUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<DashboardUiState> = combine(
         getDashboardSummaryUseCase(),
-        accountRepository.getAllActiveAccounts(),
-        transactionRepository.getAllTransactions(),
+        getAccountsUseCase.getActiveAccounts(),
+        getAllTransactionsUseCase(),
         generateFinancialInsightsUseCase(),
-        userPreferencesRepository.userPreferencesFlow
+        getUserPreferencesUseCase()
     ) { summary, accounts, transactions, insights, prefs ->
         DashboardUiState(
             isLoading = false,
@@ -69,7 +71,7 @@ class DashboardViewModel @Inject constructor(
                 .filter { it.isNotEmpty() }
                 .toMutableSet()
             if (widget.key in hidden) hidden.remove(widget.key) else hidden.add(widget.key)
-            userPreferencesRepository.updateHiddenDashboardWidgets(hidden.joinToString(","))
+            updateUserPreferencesUseCase.updateHiddenDashboardWidgets(hidden.joinToString(","))
         }
     }
 
@@ -82,13 +84,13 @@ class DashboardViewModel @Inject constructor(
             if (target !in ordered.indices) return@launch
             ordered.removeAt(index)
             ordered.add(target, widget)
-            userPreferencesRepository.updateDashboardWidgetOrder(ordered.joinToString(",") { it.key })
+            updateUserPreferencesUseCase.updateDashboardWidgetOrder(ordered.joinToString(",") { it.key })
         }
     }
 
     fun toggleCompactLayout(compact: Boolean) {
         viewModelScope.launch {
-            userPreferencesRepository.updateCompactDashboard(compact)
+            updateUserPreferencesUseCase.updateCompactDashboard(compact)
         }
     }
 }

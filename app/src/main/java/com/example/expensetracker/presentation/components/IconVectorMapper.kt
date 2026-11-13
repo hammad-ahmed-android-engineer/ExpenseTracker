@@ -56,6 +56,7 @@ fun String.toCategoryIconVector(): ImageVector = when (this) {
     "AccountBalanceWallet" -> Icons.Default.AccountBalanceWallet
     "CreditCard" -> Icons.Default.CreditCard
     "Savings" -> Icons.Default.Savings
+    "Laptop" -> Icons.Default.ShoppingBag
     "MoreHoriz" -> Icons.Default.MoreHoriz
     else -> Icons.Default.Category
 }

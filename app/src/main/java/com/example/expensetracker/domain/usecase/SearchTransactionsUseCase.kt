@@ -1,9 +1,9 @@
 package com.example.expensetracker.domain.usecase
 
 import com.example.expensetracker.domain.model.Transaction
-import com.example.expensetracker.domain.repository.TransactionFilter
+import com.example.expensetracker.domain.model.TransactionFilter
 import com.example.expensetracker.domain.repository.TransactionRepository
-import com.example.expensetracker.domain.repository.TransactionSortOrder
+import com.example.expensetracker.domain.model.TransactionSortOrder
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

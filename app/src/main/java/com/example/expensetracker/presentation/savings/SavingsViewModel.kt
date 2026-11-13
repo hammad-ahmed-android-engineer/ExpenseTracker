@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.core.common.toMinorUnits
 import com.example.expensetracker.domain.model.SavingsContribution
 import com.example.expensetracker.domain.model.SavingsGoal
-import com.example.expensetracker.domain.repository.SavingsGoalRepository
-import com.example.expensetracker.domain.repository.UserPreferencesRepository
+import com.example.expensetracker.domain.usecase.AddSavingsContributionUseCase
+import com.example.expensetracker.domain.usecase.AddSavingsGoalUseCase
+import com.example.expensetracker.domain.usecase.DeleteSavingsGoalUseCase
+import com.example.expensetracker.domain.usecase.GetSavingsGoalsUseCase
+import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,13 +27,16 @@ data class SavingsUiState(
 
 @HiltViewModel
 class SavingsViewModel @Inject constructor(
-    private val savingsGoalRepository: SavingsGoalRepository,
-    userPreferencesRepository: UserPreferencesRepository
+    private val getSavingsGoalsUseCase: GetSavingsGoalsUseCase,
+    private val addSavingsGoalUseCase: AddSavingsGoalUseCase,
+    private val addSavingsContributionUseCase: AddSavingsContributionUseCase,
+    private val deleteSavingsGoalUseCase: DeleteSavingsGoalUseCase,
+    getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
     val uiState: StateFlow<SavingsUiState> = combine(
-        savingsGoalRepository.getAllGoals(),
-        userPreferencesRepository.userPreferencesFlow
+        getSavingsGoalsUseCase(),
+        getUserPreferencesUseCase()
     ) { goals, prefs ->
         SavingsUiState(
             isLoading = false,
@@ -62,7 +68,7 @@ class SavingsViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            savingsGoalRepository.addGoal(goal)
+            addSavingsGoalUseCase(goal)
         }
     }
 
@@ -79,13 +85,13 @@ class SavingsViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            savingsGoalRepository.addContribution(goalId, contribution)
+            addSavingsContributionUseCase(goalId, contribution)
         }
     }
 
     fun deleteGoal(goal: SavingsGoal) {
         viewModelScope.launch {
-            savingsGoalRepository.deleteGoal(goal)
+            deleteSavingsGoalUseCase(goal)
         }
     }
 }

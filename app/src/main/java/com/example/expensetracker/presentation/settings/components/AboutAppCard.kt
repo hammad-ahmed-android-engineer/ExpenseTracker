@@ -30,7 +30,7 @@ fun AboutAppCard(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             AppTypography.Caption(
-                text = "100% Offline • Zero Network Access • Local Room + DataStore"
+                text = stringResource(R.string.offline_storage_info)
             )
         }
     }

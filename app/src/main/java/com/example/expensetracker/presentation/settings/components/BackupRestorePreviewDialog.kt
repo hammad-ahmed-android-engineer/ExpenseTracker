@@ -37,16 +37,16 @@ fun BackupRestorePreviewDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = "Backup Preview",
+        title = stringResource(R.string.restore_preview_title),
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)) {
-                KeyValueRow(label = "Exported", value = preview.exportedAt.formatDate("MMM dd, yyyy"))
-                KeyValueRow(label = "Transactions", value = "${preview.transactionCount}")
-                KeyValueRow(label = "Accounts", value = "${preview.accountCount}")
-                KeyValueRow(label = "Categories", value = "${preview.categoryCount}")
-                KeyValueRow(label = "Budgets / Goals", value = "${preview.budgetCount} / ${preview.savingsGoalCount}")
+                KeyValueRow(label = stringResource(R.string.exported_label), value = preview.exportedAt.formatDate("MMM dd, yyyy"))
+                KeyValueRow(label = stringResource(R.string.transactions_label), value = "${preview.transactionCount}")
+                KeyValueRow(label = stringResource(R.string.accounts_label), value = "${preview.accountCount}")
+                KeyValueRow(label = stringResource(R.string.categories_label), value = "${preview.categoryCount}")
+                KeyValueRow(label = stringResource(R.string.budgets_goals_label), value = "${preview.budgetCount} / ${preview.savingsGoalCount}")
                 AppDivider()
-                AppTypography.TitleSmall(text = "Restore Mode", color = MaterialTheme.colorScheme.primary)
+                AppTypography.TitleSmall(text = stringResource(R.string.restore_mode), color = MaterialTheme.colorScheme.primary)
                 AppSurface(
                     onClick = { mode = BackupRestoreMode.MERGE_SKIP_DUPLICATES },
                     shape = RoundedCornerShape(AppDimensions.cornerMedium),
@@ -62,8 +62,8 @@ fun BackupRestorePreviewDialog(
                             onClick = { mode = BackupRestoreMode.MERGE_SKIP_DUPLICATES }
                         )
                         Column {
-                            AppTypography.LabelLarge(text = "Merge (Skip Duplicates)")
-                            AppTypography.Caption(text = "Keep existing records and import new ones")
+                            AppTypography.LabelLarge(text = stringResource(R.string.merge_skip_duplicates))
+                            AppTypography.Caption(text = stringResource(R.string.merge_skip_duplicates_desc))
                         }
                     }
                 }
@@ -82,14 +82,14 @@ fun BackupRestorePreviewDialog(
                             onClick = { mode = BackupRestoreMode.REPLACE_ALL }
                         )
                         Column {
-                            AppTypography.LabelLarge(text = "Replace All Data")
-                            AppTypography.Caption(text = "Overwrite current database with backup")
+                            AppTypography.LabelLarge(text = stringResource(R.string.replace_all_data))
+                            AppTypography.Caption(text = stringResource(R.string.replace_all_data_desc))
                         }
                     }
                 }
             }
         },
-        confirmButtonText = "Restore Backup",
+        confirmButtonText = stringResource(R.string.restore_backup),
         isDestructive = mode == BackupRestoreMode.REPLACE_ALL,
         onConfirm = { onConfirm(mode) },
         dismissButtonText = stringResource(R.string.action_cancel),

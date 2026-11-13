@@ -5,7 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.Subcategory
 import com.example.expensetracker.domain.model.TransactionType
-import com.example.expensetracker.domain.repository.CategoryRepository
+import com.example.expensetracker.domain.usecase.DeleteCategoryUseCase
+import com.example.expensetracker.domain.usecase.GetCategoriesUseCase
+import com.example.expensetracker.domain.usecase.ManageSubcategoriesUseCase
+import com.example.expensetracker.domain.usecase.SaveCategoryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,14 +27,17 @@ data class CategoriesUiState(
 
 @HiltViewModel
 class CategoryViewModel @Inject constructor(
-    private val categoryRepository: CategoryRepository
+    private val getCategoriesUseCase: GetCategoriesUseCase,
+    private val saveCategoryUseCase: SaveCategoryUseCase,
+    private val deleteCategoryUseCase: DeleteCategoryUseCase,
+    private val manageSubcategoriesUseCase: ManageSubcategoriesUseCase
 ) : ViewModel() {
 
     private val _selectedType = MutableStateFlow(TransactionType.EXPENSE)
     private val _errorMessage = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<CategoriesUiState> = combine(
-        categoryRepository.getAllCategories(),
+        getCategoriesUseCase(),
         _selectedType,
         _errorMessage
     ) { cats, type, err ->
@@ -60,14 +66,14 @@ class CategoryViewModel @Inject constructor(
             colorHex = colorHex
         )
         viewModelScope.launch {
-            categoryRepository.addCategory(cat)
+            saveCategoryUseCase(cat)
         }
     }
 
     fun addSubcategory(categoryId: Long, name: String) {
         if (name.trim().isEmpty()) return
         viewModelScope.launch {
-            categoryRepository.addSubcategory(
+            manageSubcategoriesUseCase.addSubcategory(
                 Subcategory(categoryId = categoryId, name = name.trim())
             )
         }
@@ -75,13 +81,13 @@ class CategoryViewModel @Inject constructor(
 
     fun deleteSubcategory(subcategory: Subcategory) {
         viewModelScope.launch {
-            categoryRepository.deleteSubcategory(subcategory)
+            manageSubcategoriesUseCase.deleteSubcategory(subcategory)
         }
     }
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            val deleted = categoryRepository.deleteCategory(category)
+            val deleted = deleteCategoryUseCase(category)
             if (!deleted) {
                 _errorMessage.value = "Cannot delete '${category.name}' because existing transactions use it."
             }

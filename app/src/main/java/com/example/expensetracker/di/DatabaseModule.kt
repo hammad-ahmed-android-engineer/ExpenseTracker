@@ -12,10 +12,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -25,8 +21,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(
-        @ApplicationContext context: Context,
-        databaseProvider: Provider<ExpenseTrackerDatabase>
+        @ApplicationContext context: Context
     ): ExpenseTrackerDatabase {
         return Room.databaseBuilder(
             context,
@@ -36,13 +31,23 @@ object DatabaseModule {
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val database = databaseProvider.get()
-                        database.categoryDao().insertCategories(DefaultData.defaultExpenseCategories)
-                        database.categoryDao().insertCategories(DefaultData.defaultIncomeCategories)
-                        for (account in DefaultData.defaultAccounts) {
-                            database.accountDao().insertAccount(account)
+                    db.beginTransaction()
+                    try {
+                        for (cat in DefaultData.defaultExpenseCategories + DefaultData.defaultIncomeCategories) {
+                            db.execSQL(
+                                "INSERT OR IGNORE INTO categories (id, name, type, iconName, colorHex, orderIndex, isDefault) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                arrayOf(cat.id, cat.name, cat.type, cat.iconName, cat.colorHex, cat.orderIndex, if (cat.isDefault) 1 else 0)
+                            )
                         }
+                        for (acc in DefaultData.defaultAccounts) {
+                            db.execSQL(
+                                "INSERT OR IGNORE INTO accounts (id, name, type, initialBalance, currentBalance, currency, colorHex, iconName, isArchived, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                arrayOf(acc.id, acc.name, acc.type, acc.initialBalance, acc.currentBalance, acc.currency, acc.colorHex, acc.iconName, if (acc.isArchived) 1 else 0, acc.createdAt)
+                            )
+                        }
+                        db.setTransactionSuccessful()
+                    } finally {
+                        db.endTransaction()
                     }
                 }
             })

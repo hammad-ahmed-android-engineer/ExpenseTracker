@@ -20,7 +20,7 @@ import com.example.expensetracker.data.local.entity.*
         TransactionTagCrossRefEntity::class,
         ExchangeRateEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class ExpenseTrackerDatabase : RoomDatabase() {

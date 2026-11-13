@@ -26,8 +26,8 @@ import com.example.expensetracker.core.designsystem.components.AppRadioButton
 import com.example.expensetracker.core.designsystem.components.AppSurface
 import com.example.expensetracker.domain.model.Account
 import com.example.expensetracker.domain.model.Category
-import com.example.expensetracker.domain.repository.TransactionFilter
-import com.example.expensetracker.domain.repository.TransactionSortOrder
+import com.example.expensetracker.domain.model.TransactionFilter
+import com.example.expensetracker.domain.model.TransactionSortOrder
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -46,10 +46,10 @@ fun TransactionFilterBottomSheet(
 
     AppBottomSheet(
         onDismissRequest = onDismiss,
-        title = "Filter & Sort"
+        title = stringResource(R.string.filter_and_sort)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)) {
-            AppTypography.TitleSmall(text = "Sort By", color = MaterialTheme.colorScheme.primary)
+            AppTypography.TitleSmall(text = stringResource(R.string.sort_by), color = MaterialTheme.colorScheme.primary)
             Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)) {
                 TransactionSortOrder.entries.forEach { order ->
                     AppSurface(
@@ -74,7 +74,7 @@ fun TransactionFilterBottomSheet(
                 }
             }
 
-            AppTypography.TitleSmall(text = "Account", color = MaterialTheme.colorScheme.primary)
+            AppTypography.TitleSmall(text = stringResource(R.string.label_account), color = MaterialTheme.colorScheme.primary)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)
@@ -82,7 +82,7 @@ fun TransactionFilterBottomSheet(
                 AppFilterChip(
                     selected = filter.accountId == null,
                     onClick = { onAccountSelect(null) },
-                    label = { AppTypography.LabelSmall(text = "All Accounts") }
+                    label = { AppTypography.LabelSmall(text = stringResource(R.string.all_accounts)) }
                 )
                 accounts.forEach { acc ->
                     AppFilterChip(
@@ -93,7 +93,7 @@ fun TransactionFilterBottomSheet(
                 }
             }
 
-            AppTypography.TitleSmall(text = "Payment Method", color = MaterialTheme.colorScheme.primary)
+            AppTypography.TitleSmall(text = stringResource(R.string.payment_method), color = MaterialTheme.colorScheme.primary)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)
@@ -101,7 +101,7 @@ fun TransactionFilterBottomSheet(
                 AppFilterChip(
                     selected = filter.paymentMethod == null,
                     onClick = { onPaymentMethodSelect(null) },
-                    label = { AppTypography.LabelSmall(text = "Any") }
+                    label = { AppTypography.LabelSmall(text = stringResource(R.string.any_payment_method)) }
                 )
                 paymentMethods.forEach { method ->
                     AppFilterChip(
@@ -112,7 +112,7 @@ fun TransactionFilterBottomSheet(
                 }
             }
 
-            AppTypography.TitleSmall(text = "Category", color = MaterialTheme.colorScheme.primary)
+            AppTypography.TitleSmall(text = stringResource(R.string.label_category), color = MaterialTheme.colorScheme.primary)
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)
@@ -120,7 +120,7 @@ fun TransactionFilterBottomSheet(
                 AppFilterChip(
                     selected = filter.categoryId == null,
                     onClick = { onCategorySelect(null) },
-                    label = { AppTypography.LabelSmall(text = "All Categories") }
+                    label = { AppTypography.LabelSmall(text = stringResource(R.string.all_categories)) }
                 )
                 categories.forEach { cat ->
                     AppFilterChip(
@@ -146,7 +146,7 @@ fun TransactionFilterBottomSheet(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 ) {
-                    AppTypography.ButtonText(text = "Apply")
+                    AppTypography.ButtonText(text = stringResource(R.string.action_apply))
                 }
             }
         }

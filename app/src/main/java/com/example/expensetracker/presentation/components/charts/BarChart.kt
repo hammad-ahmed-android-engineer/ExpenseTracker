@@ -28,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
+import com.example.expensetracker.R
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -79,7 +81,7 @@ fun GroupedBarChart(
                         .background(incomeColor)
                 )
                 Spacer(modifier = Modifier.width(AppDimensions.paddingMicro))
-                AppTypography.LabelSmall(text = "Income", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AppTypography.LabelSmall(text = stringResource(R.string.chart_income), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -89,7 +91,7 @@ fun GroupedBarChart(
                         .background(expenseColor)
                 )
                 Spacer(modifier = Modifier.width(AppDimensions.paddingMicro))
-                AppTypography.LabelSmall(text = "Expense", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AppTypography.LabelSmall(text = stringResource(R.string.chart_expense), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 

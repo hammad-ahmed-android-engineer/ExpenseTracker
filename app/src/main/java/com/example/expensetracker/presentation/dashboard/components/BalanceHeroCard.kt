@@ -23,7 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
@@ -51,180 +52,64 @@ fun BalanceHeroCard(
     modifier: Modifier = Modifier
 ) {
     val colors = semanticColors
-    val primary = MaterialTheme.colorScheme.primary
-    val primaryContainer = MaterialTheme.colorScheme.primaryContainer
-    val onPrimaryContainer = MaterialTheme.colorScheme.onPrimaryContainer
+    val netWorthColor = Color(0xFF2C3258)
+    val cardTextColor = Color.White
 
     AppCard(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimensions.cornerExtraLarge),
-        colors = CardDefaults.cardColors(containerColor = primaryContainer),
+        colors = CardDefaults.cardColors(containerColor = netWorthColor),
         border = null
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            primaryContainer,
-                            primary.copy(alpha = 0.22f)
-                        )
-                    )
-                )
-                .padding(
-                    if (compact) AppDimensions.paddingMedium else AppDimensions.paddingLarge
-                )
+                .padding(AppDimensions.paddingLarge)
         ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AppTypography.LabelMedium(
-                        text = stringResource(R.string.total_combined_balance),
-                        color = onPrimaryContainer.copy(alpha = 0.78f)
-                    )
-                    if (expenseDeltaPct != 0f) {
-                        val isLower = expenseDeltaPct < 0f
-                        val label = "${if (isLower) "▼" else "▲"} ${"%.0f".format(Locale.US, abs(expenseDeltaPct))}% vs last mo"
-                        AppBadge(
-                            text = label,
-                            containerColor = if (isLower) colors.incomeContainer else colors.expenseContainer,
-                            contentColor = if (isLower) colors.income else colors.expense
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
-
-                AppTypography.DisplayLarge(
-                    text = totalBalance.formatCurrency(currencyCode),
-                    color = onPrimaryContainer,
-                    maxLines = 1
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                AppTypography.LabelMedium(
+                    text = stringResource(R.string.net_worth_card),
+                    color = cardTextColor.copy(alpha = 0.85f)
                 )
-
-                Spacer(
-                    modifier = Modifier.height(
-                        if (compact) AppDimensions.paddingMedium else AppDimensions.paddingLarge
-                    )
+                AppIcon(
+                    imageVector = Icons.Default.UnfoldMore,
+                    contentDescription = null,
+                    tint = cardTextColor.copy(alpha = 0.70f),
+                    modifier = Modifier.size(AppDimensions.icons.small)
                 )
+            }
 
+            Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
+
+            AppTypography.DisplayLarge(
+                text = totalBalance.formatCurrency(currencyCode),
+                color = cardTextColor,
+                maxLines = 1
+            )
+
+            Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
+
+            AppSurface(
+                shape = RoundedCornerShape(AppDimensions.cornerPill),
+                color = Color.White.copy(alpha = 0.12f),
+                border = null
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
+                    modifier = Modifier.padding(
+                        horizontal = AppDimensions.paddingMedium,
+                        vertical = AppDimensions.paddingMicro
+                    ),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)
                 ) {
-                    AppSurface(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(AppDimensions.cornerMedium),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
-                        border = null
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(AppDimensions.paddingSmall),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(AppDimensions.icons.large)
-                                    .clip(CircleShape)
-                                    .background(colors.incomeContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AppIcon(
-                                    imageVector = Icons.Default.ArrowDownward,
-                                    contentDescription = null,
-                                    tint = colors.income,
-                                    modifier = Modifier.size(AppDimensions.icons.small)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
-                            Column {
-                                AppTypography.Caption(text = stringResource(R.string.income))
-                                AppTypography.TitleSmall(
-                                    text = monthlyIncome.formatCurrencyCompact(currencyCode),
-                                    fontWeight = FontWeight.Bold,
-                                    color = colors.income,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
-
-                    AppSurface(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(AppDimensions.cornerMedium),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
-                        border = null
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(AppDimensions.paddingSmall),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(AppDimensions.icons.large)
-                                    .clip(CircleShape)
-                                    .background(colors.expenseContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AppIcon(
-                                    imageVector = Icons.Default.ArrowUpward,
-                                    contentDescription = null,
-                                    tint = colors.expense,
-                                    modifier = Modifier.size(AppDimensions.icons.small)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
-                            Column {
-                                AppTypography.Caption(text = stringResource(R.string.expenses))
-                                AppTypography.TitleSmall(
-                                    text = monthlyExpense.formatCurrencyCompact(currencyCode),
-                                    fontWeight = FontWeight.Bold,
-                                    color = colors.expense,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
-
-                    AppSurface(
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(AppDimensions.cornerMedium),
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
-                        border = null
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(AppDimensions.paddingSmall),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(AppDimensions.icons.large)
-                                    .clip(CircleShape)
-                                    .background(primaryContainer),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AppIcon(
-                                    imageVector = Icons.Default.AccountBalanceWallet,
-                                    contentDescription = null,
-                                    tint = primary,
-                                    modifier = Modifier.size(AppDimensions.icons.small)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
-                            Column {
-                                AppTypography.Caption(text = stringResource(R.string.net_savings))
-                                AppTypography.TitleSmall(
-                                    text = netSavings.formatCurrencyCompact(currencyCode),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-                    }
+                    AppTypography.LabelSmall(
+                        text = "▲ ${totalBalance.formatCurrency(currencyCode)} • ${stringResource(R.string.daily_trend)}",
+                        color = Color(0xFF93C5FD)
+                    )
                 }
             }
         }

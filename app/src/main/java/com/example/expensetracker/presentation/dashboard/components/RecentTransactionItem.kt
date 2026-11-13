@@ -45,7 +45,7 @@ fun RecentTransactionItem(
     AppSurface(
         onClick = onClick,
         shape = RoundedCornerShape(AppDimensions.cornerLarge),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.5f),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -58,21 +58,24 @@ fun RecentTransactionItem(
             Spacer(modifier = Modifier.width(AppDimensions.paddingMedium))
             Column(modifier = Modifier.weight(1f)) {
                 AppTypography.TitleSmall(
-                    text = tx.title,
+                    text = tx.title.ifEmpty { tx.categoryName },
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
-                AppTypography.Caption(
-                    text = "${tx.categoryName.ifEmpty { tx.type.displayName }} • ${tx.date.formatRelativeDate()}",
-                    maxLines = 1
-                )
+                if (!tx.note.isNullOrBlank()) {
+                    AppTypography.Caption(
+                        text = tx.note,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
             AppTypography.TitleSmall(
-                text = "$prefix${tx.amount.formatCurrency(currencyCode)}",
+                text = tx.amount.formatCurrency(currencyCode),
                 fontWeight = FontWeight.Bold,
-                color = amountColor
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

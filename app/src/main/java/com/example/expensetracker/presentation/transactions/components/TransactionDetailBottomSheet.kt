@@ -51,7 +51,7 @@ fun TransactionDetailBottomSheet(
 
     AppBottomSheet(
         onDismissRequest = onDismiss,
-        title = "Transaction Details"
+        title = stringResource(R.string.transaction_details)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)) {
             Row(
@@ -82,24 +82,24 @@ fun TransactionDetailBottomSheet(
                     modifier = Modifier.padding(AppDimensions.paddingDefault),
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
                 ) {
-                    KeyValueRow(label = "Category", value = transaction.categoryName.ifEmpty { transaction.type.displayName })
+                    KeyValueRow(label = stringResource(R.string.label_category), value = transaction.categoryName.ifEmpty { transaction.type.displayName })
                     AppDivider()
-                    KeyValueRow(label = "Account", value = transaction.accountName.ifEmpty { "Primary" })
+                    KeyValueRow(label = stringResource(R.string.label_account), value = transaction.accountName.ifEmpty { stringResource(R.string.label_primary) })
                     if (transaction.destinationAccountName != null) {
                         AppDivider()
-                        KeyValueRow(label = "Destination", value = transaction.destinationAccountName)
+                        KeyValueRow(label = stringResource(R.string.label_destination), value = transaction.destinationAccountName)
                     }
                     AppDivider()
-                    KeyValueRow(label = "Date", value = transaction.date.formatDate("EEE, MMM dd, yyyy • hh:mm a"))
+                    KeyValueRow(label = stringResource(R.string.label_date), value = transaction.date.formatDate("EEE, MMM dd, yyyy • hh:mm a"))
                     AppDivider()
-                    KeyValueRow(label = "Payment", value = transaction.paymentMethod.replace("_", " "))
+                    KeyValueRow(label = stringResource(R.string.label_payment), value = transaction.paymentMethod.replace("_", " "))
                     if (!transaction.note.isNullOrBlank()) {
                         AppDivider()
-                        KeyValueRow(label = "Notes", value = transaction.note)
+                        KeyValueRow(label = stringResource(R.string.label_notes), value = transaction.note)
                     }
                     if (transaction.tags.isNotEmpty()) {
                         AppDivider()
-                        KeyValueRow(label = "Tags", value = transaction.tags.joinToString(", "))
+                        KeyValueRow(label = stringResource(R.string.label_tags), value = transaction.tags.joinToString(", "))
                     }
                 }
             }

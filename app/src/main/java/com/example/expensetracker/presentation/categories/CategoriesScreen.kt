@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
+import com.example.expensetracker.core.designsystem.components.AppAlertDialog
 import com.example.expensetracker.core.designsystem.components.AppFloatingActionButton
 import com.example.expensetracker.core.designsystem.components.AppIcon
 import com.example.expensetracker.core.designsystem.components.AppIconButton
@@ -41,7 +43,6 @@ import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.presentation.categories.components.AddCategoryDialog
 import com.example.expensetracker.presentation.categories.components.CategoryDetailBottomSheet
 import com.example.expensetracker.presentation.categories.components.CategoryGridCard
-import com.example.expensetracker.presentation.components.ConfirmationDialog
 
 @Composable
 fun CategoriesScreen(
@@ -49,7 +50,7 @@ fun CategoriesScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
+    var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
     var pendingDeleteCategory by remember { mutableStateOf<Category?>(null) }
 
@@ -57,6 +58,8 @@ fun CategoriesScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val columns = if (isLandscape) 3 else 2
     val snackbarHostState = remember { SnackbarHostState() }
+    val expenseFilterLabel = stringResource(R.string.filter_expense)
+    val incomeFilterLabel = stringResource(R.string.filter_income)
 
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let { err ->
@@ -98,13 +101,7 @@ fun CategoriesScreen(
                 options = listOf(TransactionType.EXPENSE, TransactionType.INCOME),
                 selectedOption = state.selectedType,
                 onOptionSelected = { viewModel.selectType(it) },
-                labelProvider = {
-                    if (it == TransactionType.EXPENSE) {
-                        "Expense"
-                    } else {
-                        "Income"
-                    }
-                },
+                labelProvider = { if (it == TransactionType.EXPENSE) expenseFilterLabel else incomeFilterLabel },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))
@@ -148,14 +145,18 @@ fun CategoriesScreen(
     }
 
     pendingDeleteCategory?.let { cat ->
-        ConfirmationDialog(
-            title = "Delete Category",
-            message = "Delete custom category \"${cat.name}\"?",
+        AppAlertDialog(
+            onDismissRequest = { pendingDeleteCategory = null },
+            title = stringResource(R.string.confirm_delete_category),
+            text = { AppTypography.BodyMedium(text = stringResource(R.string.delete_category_warning, cat.name)) },
+            confirmButtonText = stringResource(R.string.action_delete),
             onConfirm = {
                 viewModel.deleteCategory(cat)
                 pendingDeleteCategory = null
             },
-            onDismiss = { pendingDeleteCategory = null }
+            dismissButtonText = stringResource(R.string.action_cancel),
+            onDismiss = { pendingDeleteCategory = null },
+            isDestructive = true
         )
     }
 }
