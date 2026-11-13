@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand_emerald">#FF047857</color>
+    <color name="brand_emerald_dark">#FF022C22</color>
+    <color name="splash_background_light">#FFF5F9F7</color>
+    <color name="splash_background_dark">#FF0B0F17</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
