@@ -18,3 +18,4 @@ data class TransactionFilter(
     val tag: String? = null,
     val sortOrder: TransactionSortOrder = TransactionSortOrder.NEWEST_FIRST
 )
+

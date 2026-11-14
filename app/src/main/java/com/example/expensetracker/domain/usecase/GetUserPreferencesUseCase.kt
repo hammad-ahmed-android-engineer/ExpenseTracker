@@ -10,3 +10,4 @@ class GetUserPreferencesUseCase @Inject constructor(
 ) {
     operator fun invoke(): Flow<UserPreferences> = repository.userPreferencesFlow
 }
+

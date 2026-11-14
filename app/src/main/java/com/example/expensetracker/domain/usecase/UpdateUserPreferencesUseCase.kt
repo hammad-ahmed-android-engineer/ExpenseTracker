@@ -21,3 +21,4 @@ class UpdateUserPreferencesUseCase @Inject constructor(
     suspend fun updateCompactDashboard(compact: Boolean) = repository.updateCompactDashboard(compact)
     suspend fun updateInsightsEnabled(enabled: Boolean) = repository.updateInsightsEnabled(enabled)
 }
+
