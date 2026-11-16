@@ -1,11 +1,10 @@
 package com.example.expensetracker.presentation.components.charts
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,11 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,9 +33,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.core.common.formatCurrency
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.clickableDebounced
-import com.example.expensetracker.core.designsystem.components.AppCard
-import com.example.expensetracker.core.designsystem.components.AppIcon
+import com.example.expensetracker.core.utils.clickableDebounced
 import com.example.expensetracker.core.designsystem.components.AppSurface
 
 @Composable
@@ -134,7 +127,9 @@ fun DailySpendingHeatmap(
             // Week Columns Grid
             Row(
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState())
             ) {
                 weeks.forEach { week ->
                     Column(
@@ -148,6 +143,7 @@ fun DailySpendingHeatmap(
                                 val cellAlpha = if (dayData.isInSelectedPeriod) 1f else 0.35f
 
                                 Box(
+                                    contentAlignment = Alignment.Center,
                                     modifier = Modifier
                                         .size(AppDimensions.icons.small)
                                         .alpha(cellAlpha)
@@ -165,7 +161,17 @@ fun DailySpendingHeatmap(
                                             selectedDay = dayData
                                             onDayClick?.invoke(dayData)
                                         }
-                                )
+                                ) {
+                                    AppTypography.LabelSmall(
+                                        text = dayData.dayOfMonth.toString(),
+                                        fontWeight = if (isSelected || dayData.intensity >= 0.5f) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (dayData.intensity >= 0.75f) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = if (dayData.isInSelectedPeriod) 0.85f else 0.4f)
+                                        }
+                                    )
+                                }
                             } else {
                                 Spacer(modifier = Modifier.size(AppDimensions.icons.small))
                             }

@@ -103,7 +103,7 @@ fun SavingsGoalCardItem(
                         AppIconButton(onClick = { showMenu = true }) {
                             AppIcon(
                                 imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Goal Options",
+                                contentDescription = stringResource(R.string.goal_options),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -112,7 +112,7 @@ fun SavingsGoalCardItem(
                             onDismissRequest = { showMenu = false }
                         ) {
                             AppDropdownMenuItem(
-                                text = { AppTypography.LabelMedium(text = "Delete Goal") },
+                                text = { AppTypography.LabelMedium(text = stringResource(R.string.delete_goal)) },
                                 leadingIcon = {
                                     AppIcon(
                                         imageVector = Icons.Default.Delete,

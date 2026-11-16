@@ -5,6 +5,7 @@ import com.example.expensetracker.data.repository.AccountRepositoryImpl
 import com.example.expensetracker.data.repository.BackupRepositoryImpl
 import com.example.expensetracker.data.repository.BudgetRepositoryImpl
 import com.example.expensetracker.data.repository.CategoryRepositoryImpl
+import com.example.expensetracker.data.repository.FileStorageRepositoryImpl
 import com.example.expensetracker.data.repository.RecurringTransactionRepositoryImpl
 import com.example.expensetracker.data.repository.SavingsGoalRepositoryImpl
 import com.example.expensetracker.data.repository.TransactionRepositoryImpl
@@ -12,6 +13,7 @@ import com.example.expensetracker.domain.repository.AccountRepository
 import com.example.expensetracker.domain.repository.BackupRepository
 import com.example.expensetracker.domain.repository.BudgetRepository
 import com.example.expensetracker.domain.repository.CategoryRepository
+import com.example.expensetracker.domain.repository.FileStorageRepository
 import com.example.expensetracker.domain.repository.RecurringTransactionRepository
 import com.example.expensetracker.domain.repository.SavingsGoalRepository
 import com.example.expensetracker.domain.repository.TransactionRepository
@@ -57,4 +59,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindBackupRepository(impl: BackupRepositoryImpl): BackupRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFileStorageRepository(impl: FileStorageRepositoryImpl): FileStorageRepository
 }

@@ -100,18 +100,50 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    suspend fun generateCsvExport(): String = manageDataBackupUseCase.exportTransactionsCsv()
-    suspend fun generateJsonExport(): String = manageDataBackupUseCase.exportTransactionsJson()
-    suspend fun generateFullBackup(): String = manageDataBackupUseCase.createBackupJson()
-
-    fun inspectRestoreJson(json: String) {
+    fun exportCsvToUri(uriString: String) {
         viewModelScope.launch {
-            manageDataBackupUseCase.inspectBackup(json)
-                .onSuccess { preview ->
-                    _pendingRestore.value = PendingRestoreBackup(rawJson = json, preview = preview)
+            manageDataBackupUseCase.exportCsvToUri(uriString)
+                .onSuccess { _statusMessage.value = "Transactions exported as CSV" }
+                .onFailure { err -> _statusMessage.value = err.message ?: "Failed to export CSV" }
+        }
+    }
+
+    fun exportJsonToUri(uriString: String) {
+        viewModelScope.launch {
+            manageDataBackupUseCase.exportJsonToUri(uriString)
+                .onSuccess { _statusMessage.value = "Transactions exported as JSON" }
+                .onFailure { err -> _statusMessage.value = err.message ?: "Failed to export JSON" }
+        }
+    }
+
+    fun importCsvFromUri(uriString: String) {
+        viewModelScope.launch {
+            manageDataBackupUseCase.importCsvFromUri(uriString)
+                .onSuccess { count ->
+                    _statusMessage.value = "Successfully imported $count transactions from CSV"
                 }
                 .onFailure { err ->
-                    _statusMessage.value = err.message ?: "Invalid backup file"
+                    _statusMessage.value = err.message ?: "Failed to import CSV"
+                }
+        }
+    }
+
+    fun createBackupToUri(uriString: String) {
+        viewModelScope.launch {
+            manageDataBackupUseCase.createBackupToUri(uriString)
+                .onSuccess { _statusMessage.value = "Offline backup saved via Android SAF" }
+                .onFailure { err -> _statusMessage.value = err.message ?: "Failed to save backup" }
+        }
+    }
+
+    fun inspectRestoreUri(uriString: String) {
+        viewModelScope.launch {
+            manageDataBackupUseCase.inspectBackupFromUri(uriString)
+                .onSuccess { (rawJson, preview) ->
+                    _pendingRestore.value = PendingRestoreBackup(rawJson = rawJson, preview = preview)
+                }
+                .onFailure { err ->
+                    _statusMessage.value = err.message ?: "Could not read selected file"
                 }
         }
     }

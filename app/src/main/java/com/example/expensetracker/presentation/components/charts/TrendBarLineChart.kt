@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -59,18 +58,20 @@ fun TrendBarLineChart(
         }
     }
 
-    val displayGroups = if (groups.isEmpty()) {
-        listOf(
-            BarGroup("Oct", 180000L, 120000L),
-            BarGroup("May", 140000L, 95000L),
-            BarGroup("Jun", 190000L, 110000L),
-            BarGroup("Jul", 150000L, 85000L),
-            BarGroup("Aug", 200000L, 130000L),
-            BarGroup("Oct", 175000L, 90000L)
-        )
-    } else {
-        groups
+    if (groups.isEmpty()) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center
+        ) {
+            AppTypography.BodyMedium(
+                text = stringResource(R.string.no_transactions),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        return
     }
+
+    val displayGroups = groups
 
     val maxVal = remember(displayGroups) {
         val peak = displayGroups.flatMap { listOf(it.income, it.expense) }.maxOrNull()?.coerceAtLeast(1000L) ?: 100000L

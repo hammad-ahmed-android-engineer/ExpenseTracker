@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileOpen
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ fun DataExportSafCard(
     onExportJson: () -> Unit,
     onExportCsv: () -> Unit,
     onImportJson: () -> Unit,
+    onImportCsv: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     AppCard(modifier = modifier.fillMaxWidth()) {
@@ -39,7 +41,7 @@ fun DataExportSafCard(
             verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
         ) {
             AppTypography.TitleMedium(
-                text = stringResource(R.string.data_export_saf_backup),
+                text = stringResource(R.string.data_import_export_title),
                 fontWeight = FontWeight.SemiBold
             )
 
@@ -67,12 +69,12 @@ fun DataExportSafCard(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         AppTypography.BodyMedium(
-                            text = "Export Backup (JSON)",
+                            text = stringResource(R.string.export_backup_json),
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         AppTypography.Caption(
-                            text = "Save full offline database backup via Android SAF",
+                            text = stringResource(R.string.save_backup_saf_desc),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -101,19 +103,19 @@ fun DataExportSafCard(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         AppTypography.BodyMedium(
-                            text = "Export Transactions (CSV)",
+                            text = stringResource(R.string.export_transactions_csv),
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         AppTypography.Caption(
-                            text = "Download transaction history for Excel or Sheets",
+                            text = stringResource(R.string.download_csv_desc),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            // 3. Restore / Import JSON Backup
+            // 3. Import JSON Backup
             AppSurface(
                 onClick = onImportJson,
                 shape = RoundedCornerShape(AppDimensions.cornerMedium),
@@ -135,12 +137,46 @@ fun DataExportSafCard(
                     )
                     Column(modifier = Modifier.weight(1f)) {
                         AppTypography.BodyMedium(
-                            text = "Restore Backup (JSON)",
+                            text = stringResource(R.string.import_backup_json),
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         AppTypography.Caption(
-                            text = "Select and import a saved SpendWise backup file",
+                            text = stringResource(R.string.restore_backup_desc),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // 4. Import CSV Transactions
+            AppSurface(
+                onClick = onImportCsv,
+                shape = RoundedCornerShape(AppDimensions.cornerMedium),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(AppDimensions.paddingMedium),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
+                ) {
+                    AppIcon(
+                        imageVector = Icons.Default.FileUpload,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(AppDimensions.icons.large)
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        AppTypography.BodyMedium(
+                            text = stringResource(R.string.import_transactions_csv),
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        AppTypography.Caption(
+                            text = stringResource(R.string.import_transactions_csv_desc),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -149,5 +185,3 @@ fun DataExportSafCard(
         }
     }
 }
-
-

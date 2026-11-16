@@ -12,22 +12,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
@@ -35,28 +32,20 @@ import com.example.expensetracker.core.designsystem.components.AppAlertDialog
 import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.presentation.settings.components.AboutAppCard
 import com.example.expensetracker.presentation.settings.components.BackupRestorePreviewDialog
 import com.example.expensetracker.presentation.settings.components.DataExportSafCard
-import com.example.expensetracker.presentation.settings.components.FinanceSettingsCard
-import com.example.expensetracker.presentation.settings.components.NotificationsSettingsCard
 import com.example.expensetracker.presentation.settings.components.PalettePickerCard
 import com.example.expensetracker.presentation.settings.components.RealisticSampleDataCard
 import com.example.expensetracker.presentation.settings.components.ThemeModesCard
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val prefs = state.preferences
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var showClearConfirm by rememberSaveable { mutableStateOf(false) }
 
@@ -70,66 +59,25 @@ fun SettingsScreen(
     val exportCsvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/csv")
     ) { uri ->
-        uri?.let { targetUri ->
-            scope.launch {
-                val csv = viewModel.generateCsvExport()
-                withContext(Dispatchers.IO) {
-                    context.contentResolver.openOutputStream(targetUri)?.use { out ->
-                        out.write(csv.toByteArray())
-                    }
-                }
-                viewModel.notifyMessage("Transactions exported as CSV")
-            }
-        }
-    }
-
-    val exportJsonLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri?.let { targetUri ->
-            scope.launch {
-                val json = viewModel.generateJsonExport()
-                withContext(Dispatchers.IO) {
-                    context.contentResolver.openOutputStream(targetUri)?.use { out ->
-                        out.write(json.toByteArray())
-                    }
-                }
-                viewModel.notifyMessage("Transactions exported as JSON")
-            }
-        }
+        uri?.let { viewModel.exportCsvToUri(it.toString()) }
     }
 
     val createBackupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        uri?.let { targetUri ->
-            scope.launch {
-                val backup = viewModel.generateFullBackup()
-                withContext(Dispatchers.IO) {
-                    context.contentResolver.openOutputStream(targetUri)?.use { out ->
-                        out.write(backup.toByteArray())
-                    }
-                }
-                viewModel.notifyMessage("Offline backup saved via Android SAF")
-            }
-        }
+        uri?.let { viewModel.createBackupToUri(it.toString()) }
     }
 
     val restoreBackupLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { targetUri ->
-            scope.launch {
-                val json = withContext(Dispatchers.IO) {
-                    context.contentResolver.openInputStream(targetUri)?.bufferedReader()?.use { it.readText() }
-                }
-                if (json != null) {
-                    viewModel.inspectRestoreJson(json)
-                } else {
-                    viewModel.notifyMessage("Could not read selected file")
-                }
-            }
-        }
+        uri?.let { viewModel.inspectRestoreUri(it.toString()) }
+    }
+
+    val importCsvLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.importCsvFromUri(it.toString()) }
     }
 
     AppScaffold(
@@ -185,7 +133,8 @@ fun SettingsScreen(
                         DataExportSafCard(
                             onExportJson = { createBackupLauncher.launch("spendwise_backup.json") },
                             onExportCsv = { exportCsvLauncher.launch("spendwise_transactions.csv") },
-                            onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) }
+                            onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) },
+                            onImportCsv = { importCsvLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "application/csv", "*/*")) }
                         )
                     }
                     item {
@@ -222,7 +171,8 @@ fun SettingsScreen(
                     DataExportSafCard(
                         onExportJson = { createBackupLauncher.launch("spendwise_backup.json") },
                         onExportCsv = { exportCsvLauncher.launch("spendwise_transactions.csv") },
-                        onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) }
+                        onImportJson = { restoreBackupLauncher.launch(arrayOf("application/json", "*/*")) },
+                        onImportCsv = { importCsvLauncher.launch(arrayOf("text/comma-separated-values", "text/csv", "application/csv", "*/*")) }
                     )
                 }
 

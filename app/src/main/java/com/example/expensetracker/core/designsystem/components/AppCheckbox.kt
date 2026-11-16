@@ -5,7 +5,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedCallback
+import com.example.expensetracker.core.utils.rememberDebouncedCallback
 
 @Composable
 fun AppCheckbox(

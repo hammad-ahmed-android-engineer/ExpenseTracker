@@ -18,8 +18,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,7 +38,6 @@ import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSegmentedSelector
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.domain.model.Category
 import com.example.expensetracker.domain.model.TransactionType
 import com.example.expensetracker.presentation.categories.components.AddCategoryDialog
 import com.example.expensetracker.presentation.categories.components.CategoryDetailBottomSheet
@@ -49,10 +48,10 @@ fun CategoriesScreen(
     viewModel: CategoryViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
-    var pendingDeleteCategory by remember { mutableStateOf<Category?>(null) }
+    var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var pendingDeleteCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -68,8 +67,11 @@ fun CategoriesScreen(
         }
     }
 
-    val currentSelectedCategory = selectedCategory?.let { sel ->
-        state.categories.find { it.id == sel.id } ?: sel
+    val currentSelectedCategory = selectedCategoryId?.let { id ->
+        state.categories.find { it.id == id }
+    }
+    val pendingDeleteCategory = pendingDeleteCategoryId?.let { id ->
+        state.categories.find { it.id == id }
     }
 
     AppScaffold(
@@ -116,8 +118,8 @@ fun CategoriesScreen(
                 items(state.categories, key = { it.id }) { cat ->
                     CategoryGridCard(
                         category = cat,
-                        onClick = { selectedCategory = cat },
-                        onDelete = { pendingDeleteCategory = cat }
+                        onClick = { selectedCategoryId = cat.id },
+                        onDelete = { pendingDeleteCategoryId = cat.id }
                     )
                 }
             }
@@ -140,22 +142,22 @@ fun CategoriesScreen(
             category = cat,
             onAddSubcategory = { subName -> viewModel.addSubcategory(cat.id, subName) },
             onDeleteSubcategory = { sub -> viewModel.deleteSubcategory(sub) },
-            onDismiss = { selectedCategory = null }
+            onDismiss = { selectedCategoryId = null }
         )
     }
 
     pendingDeleteCategory?.let { cat ->
         AppAlertDialog(
-            onDismissRequest = { pendingDeleteCategory = null },
+            onDismissRequest = { pendingDeleteCategoryId = null },
             title = stringResource(R.string.confirm_delete_category),
             text = { AppTypography.BodyMedium(text = stringResource(R.string.delete_category_warning, cat.name)) },
             confirmButtonText = stringResource(R.string.action_delete),
             onConfirm = {
                 viewModel.deleteCategory(cat)
-                pendingDeleteCategory = null
+                pendingDeleteCategoryId = null
             },
             dismissButtonText = stringResource(R.string.action_cancel),
-            onDismiss = { pendingDeleteCategory = null },
+            onDismiss = { pendingDeleteCategoryId = null },
             isDestructive = true
         )
     }

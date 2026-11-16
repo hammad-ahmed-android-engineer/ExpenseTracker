@@ -87,10 +87,4 @@ class DashboardViewModel @Inject constructor(
             updateUserPreferencesUseCase.updateDashboardWidgetOrder(ordered.joinToString(",") { it.key })
         }
     }
-
-    fun toggleCompactLayout(compact: Boolean) {
-        viewModelScope.launch {
-            updateUserPreferencesUseCase.updateCompactDashboard(compact)
-        }
-    }
 }

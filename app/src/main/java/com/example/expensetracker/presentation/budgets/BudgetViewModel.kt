@@ -22,6 +22,7 @@ import com.example.expensetracker.domain.usecase.GetSavingsGoalsUseCase
 import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import com.example.expensetracker.domain.usecase.SaveBudgetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -35,7 +36,8 @@ data class BudgetsUiState(
     val budgets: List<Budget> = emptyList(),
     val savingsGoals: List<SavingsGoal> = emptyList(),
     val expenseCategories: List<Category> = emptyList(),
-    val currencyCode: String = "USD"
+    val currencyCode: String = "USD",
+    val message: String? = null
 )
 
 @HiltViewModel
@@ -51,18 +53,22 @@ class BudgetViewModel @Inject constructor(
     getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
+    private val _message = MutableStateFlow<String?>(null)
+
     val uiState: StateFlow<BudgetsUiState> = combine(
         getBudgetsUseCase(),
         getSavingsGoalsUseCase(),
         getCategoriesUseCase.getByType(TransactionType.EXPENSE),
-        getUserPreferencesUseCase()
-    ) { bList, goals, cats, prefs ->
+        getUserPreferencesUseCase(),
+        _message
+    ) { bList, goals, cats, prefs, msg ->
         BudgetsUiState(
             isLoading = false,
             budgets = bList,
             savingsGoals = goals,
             expenseCategories = cats,
-            currencyCode = prefs.defaultCurrency
+            currencyCode = prefs.defaultCurrency,
+            message = msg
         )
     }.stateIn(
         scope = viewModelScope,
@@ -79,7 +85,10 @@ class BudgetViewModel @Inject constructor(
         category: Category? = null
     ) {
         val limit = amountLimitString.toMinorUnits()
-        if (limit <= 0L) return
+        if (limit <= 0L) {
+            _message.value = "Please enter a valid budget limit"
+            return
+        }
 
         val now = Calendar.getInstance()
         val year = now.get(Calendar.YEAR)
@@ -153,7 +162,10 @@ class BudgetViewModel @Inject constructor(
         initialDepositString: String? = null
     ) {
         val target = targetAmountString.toMinorUnits()
-        if (target <= 0L) return
+        if (target <= 0L) {
+            _message.value = "Please enter a valid target amount"
+            return
+        }
         val initialDeposit = initialDepositString?.toMinorUnits() ?: 0L
         viewModelScope.launch {
             val goalId = addSavingsGoalUseCase(
@@ -188,9 +200,11 @@ class BudgetViewModel @Inject constructor(
         }
     }
 
-    fun addFundsToGoal(goalId: Long, amountString: String, note: String = "Added funds") {
-        val amount = amountString.toMinorUnits()
-        if (amount <= 0) return
+    fun addFundsToGoal(goalId: Long, amount: Long, note: String = "Added funds") {
+        if (amount <= 0) {
+            _message.value = "Please enter a valid amount"
+            return
+        }
         viewModelScope.launch {
             addSavingsContributionUseCase(
                 goalId = goalId,
@@ -203,5 +217,13 @@ class BudgetViewModel @Inject constructor(
                 )
             )
         }
+    }
+
+    fun addFundsToGoal(goalId: Long, amountString: String, note: String = "Added funds") {
+        addFundsToGoal(goalId, amountString.toMinorUnits(), note)
+    }
+
+    fun clearMessage() {
+        _message.value = null
     }
 }

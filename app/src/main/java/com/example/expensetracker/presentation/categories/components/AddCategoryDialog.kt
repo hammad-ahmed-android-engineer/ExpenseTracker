@@ -14,7 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,9 +37,9 @@ fun AddCategoryDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String, icon: String, color: String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedIcon by remember { mutableStateOf("Restaurant") }
-    var selectedColor by remember { mutableStateOf("#10B981") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var selectedIcon by rememberSaveable { mutableStateOf("Restaurant") }
+    var selectedColor by rememberSaveable { mutableStateOf("#10B981") }
 
     val icons = listOf(
         "Restaurant", "ShoppingCart", "DirectionsCar", "ShoppingBag",

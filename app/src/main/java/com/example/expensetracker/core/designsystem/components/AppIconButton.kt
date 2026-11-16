@@ -5,7 +5,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedClick
+import com.example.expensetracker.core.utils.rememberDebouncedClick
 
 @Composable
 fun AppIconButton(

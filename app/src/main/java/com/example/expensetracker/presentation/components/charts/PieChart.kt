@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +38,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import com.example.expensetracker.core.common.formatCurrency
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.expensetracker.core.common.formatCurrencyCompact
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
@@ -58,18 +59,23 @@ fun DonutChart(
     modifier: Modifier = Modifier
 ) {
     var selectedSliceIndex by remember { mutableStateOf<Int?>(null) }
-    val progress = remember { Animatable(0f) }
+    var hasAnimated by rememberSaveable(slices.map { it.label to it.value }) { mutableStateOf(false) }
+    val progress = remember { Animatable(if (hasAnimated) 1f else 0f) }
 
     LaunchedEffect(slices) {
-        progress.snapTo(0f)
-        progress.animateTo(1f, animationSpec = tween(durationMillis = 750))
+        if (!hasAnimated) {
+            progress.animateTo(1f, animationSpec = tween(durationMillis = 750))
+            hasAnimated = true
+        } else {
+            progress.snapTo(1f)
+        }
     }
 
     val total = remember(slices) { slices.sumOf { it.value } }
     val trackColor = MaterialTheme.colorScheme.surfaceContainerHighest
 
     val chartBoxSize = if (legendOnRight) {
-        AppDimensions.components.emptyStateIconContainer * 2.7f
+        AppDimensions.components.emptyStateIconContainer * 2.2f
     } else {
         AppDimensions.components.emptyStateIconContainer * 3.4f
     }
@@ -204,7 +210,7 @@ fun DonutChart(
     if (legendOnRight) {
         Row(
             modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround,
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             chartContent()
@@ -212,10 +218,15 @@ fun DonutChart(
             if (showLegend && slices.isNotEmpty()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
-                    modifier = Modifier.padding(start = AppDimensions.paddingMedium)
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = AppDimensions.paddingMedium)
                 ) {
                     slices.take(5).forEach { slice ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(AppDimensions.icons.tiny)
@@ -223,10 +234,19 @@ fun DonutChart(
                                     .background(slice.color)
                             )
                             Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
-                            AppTypography.BodyMedium(
+                            AppTypography.BodySmall(
                                 text = slice.label,
                                 fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Spacer(modifier = Modifier.width(AppDimensions.paddingMicro))
+                            AppTypography.LabelSmall(
+                                text = "%.0f%%".format(Locale.US, slice.percentage),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1
                             )
                         }
                     }

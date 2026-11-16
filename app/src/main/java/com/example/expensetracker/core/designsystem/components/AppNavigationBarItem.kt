@@ -6,7 +6,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedClick
+import com.example.expensetracker.core.utils.rememberDebouncedClick
 
 @Composable
 fun RowScope.AppNavigationBarItem(

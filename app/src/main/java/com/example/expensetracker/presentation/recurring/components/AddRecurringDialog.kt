@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,17 +44,19 @@ fun AddRecurringDialog(
         accountId: Long
     ) -> Unit
 ) {
-    var title by remember { mutableStateOf("") }
-    var amount by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf(TransactionType.EXPENSE) }
-    var selectedFreq by remember { mutableStateOf(RecurringFrequency.MONTHLY) }
+    var title by rememberSaveable { mutableStateOf("") }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var selectedType by rememberSaveable { mutableStateOf(TransactionType.EXPENSE) }
+    var selectedFreq by rememberSaveable { mutableStateOf(RecurringFrequency.MONTHLY) }
     val filteredCats = remember(categories, selectedType) { categories.filter { it.type == selectedType } }
-    var selectedCategory by remember(filteredCats) { mutableStateOf(filteredCats.firstOrNull()) }
-    var selectedAccount by remember(accounts) { mutableStateOf(accounts.firstOrNull()) }
+    var selectedCategoryId by rememberSaveable { mutableStateOf(filteredCats.firstOrNull()?.id) }
+    var selectedAccountId by rememberSaveable { mutableStateOf(accounts.firstOrNull()?.id) }
+    val selectedCategory = filteredCats.find { it.id == selectedCategoryId } ?: filteredCats.firstOrNull()
+    val selectedAccount = accounts.find { it.id == selectedAccountId } ?: accounts.firstOrNull()
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = "New Recurring Rule",
+        title = stringResource(R.string.new_recurring_rule),
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)) {
                 AppSegmentedSelector(
@@ -65,13 +68,13 @@ fun AddRecurringDialog(
                 AppOutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { AppTypography.LabelMedium(text = "Title (e.g. Internet Bill)") },
+                    label = { AppTypography.LabelMedium(text = stringResource(R.string.recurring_title_hint)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 AppOutlinedTextField(
                     value = amount,
                     onValueChange = { amount = it },
-                    label = { AppTypography.LabelMedium(text = "Amount") },
+                    label = { AppTypography.LabelMedium(text = stringResource(R.string.amount)) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -94,7 +97,7 @@ fun AddRecurringDialog(
                         items(accounts, key = { it.id }) { acc ->
                             AppFilterChip(
                                 selected = selectedAccount?.id == acc.id,
-                                onClick = { selectedAccount = acc },
+                                onClick = { selectedAccountId = acc.id },
                                 label = { AppTypography.LabelSmall(text = acc.name) }
                             )
                         }
@@ -106,7 +109,7 @@ fun AddRecurringDialog(
                         items(filteredCats, key = { it.id }) { cat ->
                             AppFilterChip(
                                 selected = selectedCategory?.id == cat.id,
-                                onClick = { selectedCategory = cat },
+                                onClick = { selectedCategoryId = cat.id },
                                 label = { AppTypography.LabelSmall(text = cat.name) }
                             )
                         }

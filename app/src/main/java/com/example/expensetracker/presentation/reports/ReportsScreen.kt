@@ -9,42 +9,28 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.R
-import com.example.expensetracker.core.common.formatDate
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.components.AppCard
 import com.example.expensetracker.core.designsystem.components.AppCircularProgressIndicator
-import com.example.expensetracker.core.designsystem.components.AppIcon
-import com.example.expensetracker.core.designsystem.components.AppIconButton
 import com.example.expensetracker.core.designsystem.components.AppScaffold
-import com.example.expensetracker.core.designsystem.components.AppSegmentedSelector
-import com.example.expensetracker.core.designsystem.components.AppSurface
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.presentation.components.charts.BarGroup
-import com.example.expensetracker.presentation.components.charts.DailySpendingHeatmap
-import com.example.expensetracker.presentation.components.charts.TrendBarLineChart
+import com.example.expensetracker.presentation.reports.components.ReportHeatmapCard
+import com.example.expensetracker.presentation.reports.components.ReportInsightsHighlightCard
+import com.example.expensetracker.presentation.reports.components.ReportPeriodSelector
+import com.example.expensetracker.presentation.reports.components.ReportSummaryCard
+import com.example.expensetracker.presentation.reports.components.ReportTrendChartCard
 import java.util.Calendar
 
 @Composable
@@ -53,7 +39,7 @@ fun ReportsScreen(
     onNavigateToInsights: () -> Unit,
     onNavigateToCalendar: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -98,61 +84,30 @@ fun ReportsScreen(
                         verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                     ) {
                         item(key = "period_selector") {
-                            Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)) {
-                                androidx.compose.foundation.lazy.LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    items(DateFilterPeriod.entries.size) { idx ->
-                                        val period = DateFilterPeriod.entries[idx]
-                                        com.example.expensetracker.core.designsystem.components.AppFilterChip(
-                                            selected = state.selectedPeriod == period,
-                                            onClick = { viewModel.selectPeriod(period) },
-                                            label = { AppTypography.LabelSmall(text = period.displayName) }
-                                        )
-                                    }
-                                }
+                            ReportPeriodSelector(
+                                selectedPeriod = state.selectedPeriod,
+                                dateRangeLabel = state.dateRangeLabel,
+                                onSelectPeriod = { viewModel.selectPeriod(it) },
+                                onPreviousPeriod = { viewModel.previousPeriod() },
+                                onNextPeriod = { viewModel.nextPeriod() }
+                            )
+                        }
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    AppIconButton(onClick = { viewModel.previousPeriod() }) {
-                                        AppIcon(
-                                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                            contentDescription = "Previous Range"
-                                        )
-                                    }
-                                    AppTypography.TitleSmall(
-                                        text = state.dateRangeLabel,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    AppIconButton(onClick = { viewModel.nextPeriod() }) {
-                                        AppIcon(
-                                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                            contentDescription = "Next Range"
-                                        )
-                                    }
-                                }
-                            }
+                        item(key = "financial_summary") {
+                            ReportSummaryCard(
+                                totalIncome = state.totalIncome,
+                                totalExpense = state.totalExpense,
+                                netSavings = state.netSavings,
+                                currencyCode = state.currencyCode
+                            )
                         }
 
                         item(key = "trend_chart") {
-                            AppCard(modifier = Modifier.fillMaxWidth()) {
-                                Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                    AppTypography.TitleMedium(
-                                        text = "${state.selectedPeriod.displayName} Trends Bar Chart & Line Graph",
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))
-                                    TrendBarLineChart(
-                                        groups = trendGroups,
-                                        currencyCode = state.currencyCode
-                                    )
-                                }
-                            }
+                            ReportTrendChartCard(
+                                periodDisplayName = state.selectedPeriod.displayName,
+                                trendGroups = trendGroups,
+                                currencyCode = state.currencyCode
+                            )
                         }
                     }
 
@@ -165,49 +120,18 @@ fun ReportsScreen(
                         verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                     ) {
                         item(key = "heatmap_calendar") {
-                            AppCard(modifier = Modifier.fillMaxWidth()) {
-                                Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                    DailySpendingHeatmap(
-                                        days = state.heatmapDays,
-                                        maxDailySpending = state.maxDailySpending,
-                                        currencyCode = state.currencyCode
-                                    )
-                                }
-                            }
+                            ReportHeatmapCard(
+                                days = state.heatmapDays,
+                                maxDailySpending = state.maxDailySpending,
+                                currencyCode = state.currencyCode
+                            )
                         }
 
                         item(key = "insights_card") {
-                            AppCard(modifier = Modifier.fillMaxWidth()) {
-                                Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                    AppTypography.TitleMedium(
-                                        text = stringResource(R.string.nav_insights),
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
-                                    AppSurface(
-                                        shape = androidx.compose.foundation.shape.RoundedCornerShape(AppDimensions.cornerMedium),
-                                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(AppDimensions.paddingMedium),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
-                                        ) {
-                                            AppIcon(
-                                                imageVector = Icons.Default.Lightbulb,
-                                                contentDescription = null,
-                                                tint = Color(0xFFFBBF24),
-                                                modifier = Modifier.size(AppDimensions.icons.medium)
-                                            )
-                                            AppTypography.BodyMedium(
-                                                text = "${stringResource(R.string.highest_spending_day_prefix)} ${state.highestSpendingDayText}.",
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            ReportInsightsHighlightCard(
+                                highestSpendingDayText = state.highestSpendingDayText,
+                                onNavigateToInsights = onNavigateToInsights
+                            )
                         }
                     }
                 }
@@ -221,107 +145,45 @@ fun ReportsScreen(
                     verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
                 ) {
                     item(key = "period_selector") {
-                        Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)) {
-                            androidx.compose.foundation.lazy.LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(DateFilterPeriod.entries.size) { idx ->
-                                    val period = DateFilterPeriod.entries[idx]
-                                    com.example.expensetracker.core.designsystem.components.AppFilterChip(
-                                        selected = state.selectedPeriod == period,
-                                        onClick = { viewModel.selectPeriod(period) },
-                                        label = { AppTypography.LabelSmall(text = period.displayName) }
-                                    )
-                                }
-                            }
+                        ReportPeriodSelector(
+                            selectedPeriod = state.selectedPeriod,
+                            dateRangeLabel = state.dateRangeLabel,
+                            onSelectPeriod = { viewModel.selectPeriod(it) },
+                            onPreviousPeriod = { viewModel.previousPeriod() },
+                            onNextPeriod = { viewModel.nextPeriod() }
+                        )
+                    }
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AppIconButton(onClick = { viewModel.previousPeriod() }) {
-                                    AppIcon(
-                                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                        contentDescription = "Previous Range"
-                                    )
-                                }
-                                AppTypography.TitleSmall(
-                                    text = state.dateRangeLabel,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                AppIconButton(onClick = { viewModel.nextPeriod() }) {
-                                    AppIcon(
-                                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                        contentDescription = "Next Range"
-                                    )
-                                }
-                            }
-                        }
+                    item(key = "financial_summary") {
+                        ReportSummaryCard(
+                            totalIncome = state.totalIncome,
+                            totalExpense = state.totalExpense,
+                            netSavings = state.netSavings,
+                            currencyCode = state.currencyCode
+                        )
                     }
 
                     item(key = "trend_chart") {
-                        AppCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                AppTypography.TitleMedium(
-                                    text = "${state.selectedPeriod.displayName} Trends Bar Chart & Line Graph",
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(modifier = Modifier.height(AppDimensions.paddingMedium))
-                                TrendBarLineChart(
-                                    groups = trendGroups,
-                                    currencyCode = state.currencyCode
-                                )
-                            }
-                        }
+                        ReportTrendChartCard(
+                            periodDisplayName = state.selectedPeriod.displayName,
+                            trendGroups = trendGroups,
+                            currencyCode = state.currencyCode
+                        )
                     }
 
                     item(key = "heatmap_calendar") {
-                        AppCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                DailySpendingHeatmap(
-                                    days = state.heatmapDays,
-                                    maxDailySpending = state.maxDailySpending,
-                                    currencyCode = state.currencyCode
-                                )
-                            }
-                        }
+                        ReportHeatmapCard(
+                            days = state.heatmapDays,
+                            maxDailySpending = state.maxDailySpending,
+                            currencyCode = state.currencyCode
+                        )
                     }
 
                     item(key = "insights_card") {
-                        AppCard(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.padding(AppDimensions.paddingDefault)) {
-                                AppTypography.TitleMedium(
-                                    text = stringResource(R.string.nav_insights),
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
-                                AppSurface(
-                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(AppDimensions.cornerMedium),
-                                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(AppDimensions.paddingMedium),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
-                                    ) {
-                                        AppIcon(
-                                            imageVector = Icons.Default.Lightbulb,
-                                            contentDescription = null,
-                                            tint = Color(0xFFFBBF24),
-                                            modifier = Modifier.size(AppDimensions.icons.medium)
-                                        )
-                                        AppTypography.BodyMedium(
-                                            text = "${stringResource(R.string.highest_spending_day_prefix)} ${state.highestSpendingDayText}.",
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        ReportInsightsHighlightCard(
+                            highestSpendingDayText = state.highestSpendingDayText,
+                            onNavigateToInsights = onNavigateToInsights
+                        )
                     }
 
                     item { Spacer(modifier = Modifier.height(AppDimensions.paddingLarge)) }

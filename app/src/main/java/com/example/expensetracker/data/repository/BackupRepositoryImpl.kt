@@ -159,6 +159,42 @@ class BackupRepositoryImpl @Inject constructor(
         return dataExporter.exportTransactionsToCsv(transactions)
     }
 
+    override suspend fun importTransactionsCsv(csv: String): Result<Int> = runCatching {
+        val parsedTransactions = dataExporter.parseTransactionsFromCsv(csv)
+        if (parsedTransactions.isEmpty()) {
+            throw IllegalArgumentException("No transactions found in CSV")
+        }
+        val accounts = accountDao.getAllAccountsFlow().first()
+        val defaultAccountId = accounts.firstOrNull()?.id ?: 1L
+        val defaultAccountName = accounts.firstOrNull()?.name ?: "Main Account"
+
+        val categories = categoryDao.getAllCategoriesFlow().first()
+        val defaultExpenseCat = categories.firstOrNull { it.type == "EXPENSE" }
+        val defaultIncomeCat = categories.firstOrNull { it.type == "INCOME" }
+
+        var count = 0
+        parsedTransactions.forEach { tx ->
+            val resolvedAccountId = accounts.find { it.name.equals(tx.accountName, ignoreCase = true) }?.id ?: defaultAccountId
+            val resolvedAccountName = accounts.find { it.name.equals(tx.accountName, ignoreCase = true) }?.name ?: defaultAccountName
+            val cat = categories.find { it.name.equals(tx.categoryName, ignoreCase = true) }
+                ?: if (tx.type == com.example.expensetracker.domain.model.transaction.TransactionType.INCOME) defaultIncomeCat else defaultExpenseCat
+            val resolvedCatId = cat?.id ?: 1L
+            val resolvedCatName = cat?.name ?: tx.categoryName
+
+            transactionRepository.addTransaction(
+                tx.copy(
+                    id = 0L,
+                    accountId = resolvedAccountId,
+                    accountName = resolvedAccountName,
+                    categoryId = resolvedCatId,
+                    categoryName = resolvedCatName
+                )
+            )
+            count++
+        }
+        count
+    }
+
     override suspend fun inspectBackup(json: String): Result<BackupPreview> = runCatching {
         val obj = JSONObject(json)
         if (!obj.has("transactions") || !obj.has("accounts") || !obj.has("categories")) {

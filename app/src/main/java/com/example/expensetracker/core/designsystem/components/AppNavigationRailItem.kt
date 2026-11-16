@@ -5,7 +5,7 @@ import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedClick
+import com.example.expensetracker.core.utils.rememberDebouncedClick
 
 @Composable
 fun AppNavigationRailItem(

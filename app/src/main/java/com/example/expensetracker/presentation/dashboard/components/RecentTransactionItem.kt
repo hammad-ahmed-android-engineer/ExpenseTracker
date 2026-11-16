@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import com.example.expensetracker.core.common.formatCurrency
-import com.example.expensetracker.core.common.formatRelativeDate
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
 import com.example.expensetracker.core.designsystem.components.AppSurface
@@ -73,9 +72,9 @@ fun RecentTransactionItem(
             }
             Spacer(modifier = Modifier.width(AppDimensions.paddingSmall))
             AppTypography.TitleSmall(
-                text = tx.amount.formatCurrency(currencyCode),
+                text = "$prefix${tx.amount.formatCurrency(currencyCode)}",
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = amountColor
             )
         }
     }

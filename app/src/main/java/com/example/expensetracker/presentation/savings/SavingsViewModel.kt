@@ -11,6 +11,7 @@ import com.example.expensetracker.domain.usecase.DeleteSavingsGoalUseCase
 import com.example.expensetracker.domain.usecase.GetSavingsGoalsUseCase
 import com.example.expensetracker.domain.usecase.GetUserPreferencesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -22,7 +23,8 @@ import javax.inject.Inject
 data class SavingsUiState(
     val isLoading: Boolean = true,
     val goals: List<SavingsGoal> = emptyList(),
-    val currencyCode: String = "USD"
+    val currencyCode: String = "USD",
+    val message: String? = null
 )
 
 @HiltViewModel
@@ -34,14 +36,18 @@ class SavingsViewModel @Inject constructor(
     getUserPreferencesUseCase: GetUserPreferencesUseCase
 ) : ViewModel() {
 
+    private val _message = MutableStateFlow<String?>(null)
+
     val uiState: StateFlow<SavingsUiState> = combine(
         getSavingsGoalsUseCase(),
-        getUserPreferencesUseCase()
-    ) { goals, prefs ->
+        getUserPreferencesUseCase(),
+        _message
+    ) { goals, prefs, msg ->
         SavingsUiState(
             isLoading = false,
             goals = goals,
-            currencyCode = prefs.defaultCurrency
+            currencyCode = prefs.defaultCurrency,
+            message = msg
         )
     }.stateIn(
         scope = viewModelScope,
@@ -55,7 +61,10 @@ class SavingsViewModel @Inject constructor(
         description: String? = null
     ) {
         val target = targetAmountString.toMinorUnits()
-        if (target <= 0L) return
+        if (target <= 0L) {
+            _message.value = "Please enter a valid target amount"
+            return
+        }
 
         val cal = Calendar.getInstance().apply { add(Calendar.YEAR, 1) }
 
@@ -74,7 +83,10 @@ class SavingsViewModel @Inject constructor(
 
     fun addContribution(goalId: Long, amountString: String, isDeposit: Boolean) {
         val amount = amountString.toMinorUnits()
-        if (amount <= 0L) return
+        if (amount <= 0L) {
+            _message.value = "Please enter a valid amount"
+            return
+        }
 
         val contribution = SavingsContribution(
             goalId = goalId,
@@ -93,5 +105,9 @@ class SavingsViewModel @Inject constructor(
         viewModelScope.launch {
             deleteSavingsGoalUseCase(goal)
         }
+    }
+
+    fun clearMessage() {
+        _message.value = null
     }
 }

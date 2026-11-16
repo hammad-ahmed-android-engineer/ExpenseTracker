@@ -9,6 +9,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.expensetracker.R
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
 import com.example.expensetracker.core.designsystem.components.AppCard
@@ -36,8 +38,8 @@ fun NotificationsSettingsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    AppTypography.TitleSmall(text = "Budget Limit Alerts")
-                    AppTypography.Caption(text = "Notify when spending hits warning threshold")
+                    AppTypography.TitleSmall(text = stringResource(R.string.budget_limit_alerts))
+                    AppTypography.Caption(text = stringResource(R.string.budget_limit_alerts_desc))
                 }
                 AppSwitch(
                     checked = preferences.isBudgetAlertEnabled,
@@ -48,7 +50,7 @@ fun NotificationsSettingsCard(
             if (preferences.isBudgetAlertEnabled) {
                 Column {
                     AppTypography.LabelMedium(
-                        text = "Warning Threshold: ${preferences.budgetWarningThreshold}%",
+                        text = stringResource(R.string.warning_threshold_format, preferences.budgetWarningThreshold),
                         color = MaterialTheme.colorScheme.primary
                     )
                     AppSlider(
@@ -68,8 +70,8 @@ fun NotificationsSettingsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    AppTypography.TitleSmall(text = "Recurring Bill Reminders")
-                    AppTypography.Caption(text = "Notify when scheduled rules execute")
+                    AppTypography.TitleSmall(text = stringResource(R.string.recurring_bill_reminders))
+                    AppTypography.Caption(text = stringResource(R.string.recurring_bill_reminders_desc))
                 }
                 AppSwitch(
                     checked = preferences.isRecurringReminderEnabled,

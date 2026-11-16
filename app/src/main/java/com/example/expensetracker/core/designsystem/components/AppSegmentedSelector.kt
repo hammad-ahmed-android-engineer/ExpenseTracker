@@ -17,7 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.clickableDebounced
+import com.example.expensetracker.core.utils.clickableDebounced
 
 @Composable
 fun <T> AppSegmentedSelector(

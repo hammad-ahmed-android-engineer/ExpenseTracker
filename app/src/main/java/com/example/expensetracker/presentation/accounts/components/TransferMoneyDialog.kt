@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,10 +30,12 @@ fun TransferMoneyDialog(
     onConfirm: (sourceId: Long, destId: Long, amount: String, note: String?) -> Unit
 ) {
     val activeAccounts = remember(accounts) { accounts.filterNot { it.isArchived } }
-    var sourceAcc by remember { mutableStateOf(activeAccounts.firstOrNull()) }
-    var destAcc by remember { mutableStateOf(activeAccounts.getOrNull(1)) }
-    var amount by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
+    var sourceAccId by rememberSaveable { mutableStateOf(activeAccounts.firstOrNull()?.id) }
+    var destAccId by rememberSaveable { mutableStateOf(activeAccounts.getOrNull(1)?.id) }
+    val sourceAcc = activeAccounts.find { it.id == sourceAccId } ?: activeAccounts.firstOrNull()
+    val destAcc = activeAccounts.find { it.id == destAccId } ?: activeAccounts.firstOrNull { it.id != sourceAcc?.id }
+    var amount by rememberSaveable { mutableStateOf("") }
+    var note by rememberSaveable { mutableStateOf("") }
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
@@ -45,9 +48,9 @@ fun TransferMoneyDialog(
                         AppFilterChip(
                             selected = sourceAcc?.id == acc.id,
                             onClick = {
-                                sourceAcc = acc
+                                sourceAccId = acc.id
                                 if (destAcc?.id == acc.id) {
-                                    destAcc = activeAccounts.firstOrNull { it.id != acc.id }
+                                    destAccId = activeAccounts.firstOrNull { it.id != acc.id }?.id
                                 }
                             },
                             label = { AppTypography.LabelSmall(text = acc.name) }
@@ -60,7 +63,7 @@ fun TransferMoneyDialog(
                     items(activeAccounts.filter { it.id != sourceAcc?.id }, key = { it.id }) { acc ->
                         AppFilterChip(
                             selected = destAcc?.id == acc.id,
-                            onClick = { destAcc = acc },
+                            onClick = { destAccId = acc.id },
                             label = { AppTypography.LabelSmall(text = acc.name) }
                         )
                     }

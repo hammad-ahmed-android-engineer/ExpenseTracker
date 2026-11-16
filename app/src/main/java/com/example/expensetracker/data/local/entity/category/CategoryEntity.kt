@@ -1,0 +1,15 @@
+package com.example.expensetracker.data.local.entity.category
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "categories")
+data class CategoryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val type: String,
+    val iconName: String,
+    val colorHex: String,
+    val orderIndex: Int = 0,
+    val isDefault: Boolean = false
+)

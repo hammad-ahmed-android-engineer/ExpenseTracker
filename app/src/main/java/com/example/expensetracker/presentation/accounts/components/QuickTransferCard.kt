@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -71,7 +70,7 @@ fun QuickTransferCard(
                 }) {
                     AppIcon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = "Transfer info",
+                        contentDescription = stringResource(R.string.transfer_info),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(AppDimensions.icons.small)
                     )

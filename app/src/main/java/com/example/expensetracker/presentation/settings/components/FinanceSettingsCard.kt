@@ -29,7 +29,7 @@ fun FinanceSettingsCard(
             verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)
         ) {
             AppTypography.TitleSmall(text = stringResource(R.string.default_currency))
-            AppTypography.Caption(text = "Used across dashboards, reports, and new accounts")
+            AppTypography.Caption(text = stringResource(R.string.default_currency_desc))
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)

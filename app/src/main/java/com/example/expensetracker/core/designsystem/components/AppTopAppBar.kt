@@ -9,7 +9,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import com.example.expensetracker.core.designsystem.AppDimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

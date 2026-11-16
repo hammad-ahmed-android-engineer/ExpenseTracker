@@ -17,12 +17,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,17 +44,17 @@ import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
 import com.example.expensetracker.domain.model.Account
 import com.example.expensetracker.domain.model.AccountType
-import com.example.expensetracker.presentation.accounts.components.AccountCardItem
 import com.example.expensetracker.presentation.accounts.components.AddAccountDialog
 import com.example.expensetracker.presentation.accounts.components.QuickTransferCard
 import com.example.expensetracker.presentation.accounts.components.TransferMoneyDialog
+import com.example.expensetracker.presentation.accounts.components.accountsGridItems
 
 @Composable
 fun AccountsScreen(
     viewModel: AccountViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
     var showTransferDialog by rememberSaveable { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
@@ -91,7 +90,7 @@ fun AccountsScreen(
                 },
                 navigationIcon = {
                     AppIconButton(onClick = onNavigateBack) {
-                        AppIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        AppIcon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -130,24 +129,10 @@ fun AccountsScreen(
                         )
                     }
 
-                    val chunkedAccounts = displayAccounts.chunked(2)
-                    chunkedAccounts.forEachIndexed { rowIndex, rowAccounts ->
-                        item(key = "acc_row_land_$rowIndex") {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
-                            ) {
-                                rowAccounts.forEach { acc ->
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        AccountCardItem(acc = acc)
-                                    }
-                                }
-                                if (rowAccounts.size == 1) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
-                        }
-                    }
+                    accountsGridItems(
+                        accounts = displayAccounts,
+                        keyPrefix = "acc_row_land"
+                    )
                 }
 
                 // Right Column: Quick Transfer Card
@@ -204,24 +189,10 @@ fun AccountsScreen(
                 }
 
                 // 2x2 Grid of Account Cards
-                val chunkedAccounts = displayAccounts.chunked(2)
-                chunkedAccounts.forEachIndexed { rowIndex, rowAccounts ->
-                    item(key = "acc_row_$rowIndex") {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMedium)
-                        ) {
-                            rowAccounts.forEach { acc ->
-                                Box(modifier = Modifier.weight(1f)) {
-                                    AccountCardItem(acc = acc)
-                                }
-                            }
-                            if (rowAccounts.size == 1) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
-                }
+                accountsGridItems(
+                    accounts = displayAccounts,
+                    keyPrefix = "acc_row"
+                )
 
                 item(key = "spacer_before_transfer") {
                     Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))

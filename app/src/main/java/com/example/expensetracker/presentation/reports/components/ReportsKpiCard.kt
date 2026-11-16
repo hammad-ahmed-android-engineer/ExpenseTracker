@@ -48,7 +48,7 @@ fun ReportsKpiCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppTypography.TitleSmall(
-                    text = "Period Summary",
+                    text = stringResource(R.string.period_summary),
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 AppBadge(

@@ -1,0 +1,30 @@
+package com.example.expensetracker.domain.model.transaction
+
+data class Transaction(
+    val id: Long = 0,
+    val title: String,
+    val amount: Long,
+    val type: TransactionType,
+    val categoryId: Long,
+    val subcategoryId: Long? = null,
+    val accountId: Long,
+    val destinationAccountId: Long? = null,
+    val accountName: String = "",
+    val destinationAccountName: String? = null,
+    val categoryName: String = "",
+    val categoryIcon: String = "Category",
+    val categoryColor: String = "#757575",
+    val subcategoryName: String? = null,
+    val date: Long = System.currentTimeMillis(),
+    val paymentMethod: String = "CASH",
+    val note: String? = null,
+    val location: String? = null,
+    val isRecurring: Boolean = false,
+    val recurringId: Long? = null,
+    val attachmentPath: String? = null,
+    val tags: List<String> = emptyList(),
+    val originalAmount: Long? = null,
+    val originalCurrency: String? = null,
+    val exchangeRate: Double? = null,
+    val createdAt: Long = System.currentTimeMillis()
+)

@@ -26,7 +26,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             ExpenseTrackerDatabase::class.java,
-            "expense_tracker_db"
+            "expense_tracker.db"
         )
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
@@ -51,7 +51,6 @@ object DatabaseModule {
                     }
                 }
             })
-            .fallbackToDestructiveMigration()
             .build()
     }
 

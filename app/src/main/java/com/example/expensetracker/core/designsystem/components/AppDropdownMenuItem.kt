@@ -3,7 +3,7 @@ package com.example.expensetracker.core.designsystem.components
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedClick
+import com.example.expensetracker.core.utils.rememberDebouncedClick
 
 @Composable
 fun AppDropdownMenuItem(

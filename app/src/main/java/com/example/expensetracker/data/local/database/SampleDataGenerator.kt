@@ -1,5 +1,6 @@
 package com.example.expensetracker.data.local.database
 
+import androidx.room.withTransaction
 import com.example.expensetracker.core.common.endOfMonthMillis
 import com.example.expensetracker.core.common.startOfMonthMillis
 import com.example.expensetracker.data.local.dao.AccountDao
@@ -8,19 +9,20 @@ import com.example.expensetracker.data.local.dao.CategoryDao
 import com.example.expensetracker.data.local.dao.RecurringTransactionDao
 import com.example.expensetracker.data.local.dao.SavingsGoalDao
 import com.example.expensetracker.data.local.dao.TransactionDao
-import com.example.expensetracker.data.local.entity.BudgetCategoryEntity
-import com.example.expensetracker.data.local.entity.BudgetEntity
-import com.example.expensetracker.data.local.entity.RecurringTransactionEntity
-import com.example.expensetracker.data.local.entity.SavingsGoalEntity
-import com.example.expensetracker.data.local.entity.TransactionEntity
-import com.example.expensetracker.domain.model.RecurringFrequency
-import com.example.expensetracker.domain.model.TransactionType
+import com.example.expensetracker.data.local.entity.budget.BudgetCategoryEntity
+import com.example.expensetracker.data.local.entity.budget.BudgetEntity
+import com.example.expensetracker.data.local.entity.recurring.RecurringTransactionEntity
+import com.example.expensetracker.data.local.entity.savings.SavingsGoalEntity
+import com.example.expensetracker.data.local.entity.transaction.TransactionEntity
+import com.example.expensetracker.domain.model.recurring.RecurringFrequency
+import com.example.expensetracker.domain.model.transaction.TransactionType
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SampleDataGenerator @Inject constructor(
+    private val database: ExpenseTrackerDatabase,
     private val transactionDao: TransactionDao,
     private val accountDao: AccountDao,
     private val categoryDao: CategoryDao,
@@ -30,20 +32,21 @@ class SampleDataGenerator @Inject constructor(
 ) {
 
     suspend fun generateSampleData() {
-        if (categoryDao.getCategoryCount() == 0) {
-            categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
-            categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
-        }
-        val existingAccounts = accountDao.getAllAccounts()
-        if (existingAccounts.isEmpty()) {
-            for (account in DefaultData.defaultAccounts) {
-                accountDao.insertAccount(account)
+        database.withTransaction {
+            if (categoryDao.getCategoryCount() == 0) {
+                categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
+                categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
             }
-        }
+            val existingAccounts = accountDao.getAllAccounts()
+            if (existingAccounts.isEmpty()) {
+                for (account in DefaultData.defaultAccounts) {
+                    accountDao.insertAccount(account)
+                }
+            }
 
-        val accounts = accountDao.getAllAccounts()
-        val categories = categoryDao.getAllCategories()
-        if (accounts.isEmpty() || categories.isEmpty()) return
+            val accounts = accountDao.getAllAccounts()
+            val categories = categoryDao.getAllCategories()
+            if (accounts.isEmpty() || categories.isEmpty()) return@withTransaction
 
         val checkingAcc = accounts.find { it.name.contains("Checking", ignoreCase = true) }?.id ?: accounts.first().id
         val cashAcc = accounts.find { it.name.contains("Cash", ignoreCase = true) }?.id ?: accounts.getOrNull(1)?.id ?: checkingAcc
@@ -184,6 +187,7 @@ class SampleDataGenerator @Inject constructor(
                     isEnabled = true
                 )
             )
+        }
     }
 
     suspend fun seedIncomeIfEmpty() {
@@ -244,20 +248,22 @@ class SampleDataGenerator @Inject constructor(
     }
 
     suspend fun clearAllUserData() {
-        transactionDao.deleteAllTransactions()
-        budgetDao.deleteAllBudgetCategories()
-        budgetDao.deleteAllBudgets()
-        savingsDao.deleteAllContributions()
-        savingsDao.deleteAllGoals()
-        recurringDao.deleteAllRecurring()
-        accountDao.deleteAllAccounts()
-        categoryDao.deleteAllSubcategories()
-        categoryDao.deleteAllCategories()
+        database.withTransaction {
+            transactionDao.deleteAllTransactions()
+            budgetDao.deleteAllBudgetCategories()
+            budgetDao.deleteAllBudgets()
+            savingsDao.deleteAllContributions()
+            savingsDao.deleteAllGoals()
+            recurringDao.deleteAllRecurring()
+            accountDao.deleteAllAccounts()
+            categoryDao.deleteAllSubcategories()
+            categoryDao.deleteAllCategories()
 
-        categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
-        categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
-        for (account in DefaultData.defaultAccounts) {
-            accountDao.insertAccount(account)
+            categoryDao.insertCategories(DefaultData.defaultExpenseCategories)
+            categoryDao.insertCategories(DefaultData.defaultIncomeCategories)
+            for (account in DefaultData.defaultAccounts) {
+                accountDao.insertAccount(account)
+            }
         }
     }
 }

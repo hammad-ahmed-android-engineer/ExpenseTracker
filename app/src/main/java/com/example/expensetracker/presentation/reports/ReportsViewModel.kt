@@ -254,8 +254,8 @@ class ReportsViewModel @Inject constructor(
                     val exp = inSlot.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     BarGroup(
                         label = slotLabel,
-                        income = if (transactions.isEmpty()) (idx + 1) * 20000L else inc,
-                        expense = if (transactions.isEmpty()) (idx + 1) * 15000L else exp
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
@@ -270,29 +270,33 @@ class ReportsViewModel @Inject constructor(
                     val exp = dayTxs.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     BarGroup(
                         label = dayName,
-                        income = if (transactions.isEmpty()) (idx % 3 + 1) * 25000L else inc,
-                        expense = if (transactions.isEmpty()) (idx % 4 + 1) * 20000L else exp
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
             DateFilterPeriod.MONTHLY -> {
                 val cal = Calendar.getInstance().apply { timeInMillis = dateRange.start }
-                val months = (5 downTo 0).map { mOffset ->
-                    (cal.clone() as Calendar).apply { add(Calendar.MONTH, -mOffset) }
+                val maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+                val weekBuckets = mutableListOf<Pair<String, IntRange>>()
+                weekBuckets.add("W1 (1-7)" to 1..7)
+                weekBuckets.add("W2 (8-14)" to 8..14)
+                weekBuckets.add("W3 (15-21)" to 15..21)
+                weekBuckets.add("W4 (22-28)" to 22..28)
+                if (maxDay > 28) {
+                    weekBuckets.add("W5 (29-$maxDay)" to 29..maxDay)
                 }
-                months.map { mCal ->
-                    val m = mCal.get(Calendar.MONTH)
-                    val y = mCal.get(Calendar.YEAR)
-                    val mStart = m.startOfMonthMillis(y)
-                    val mEnd = m.endOfMonthMillis(y)
-                    val mTxs = transactions.filter { it.date in mStart..mEnd }
-                    val inc = mTxs.filter { it.type == TransactionType.INCOME || it.type == TransactionType.REFUND }.sumOf { it.amount }
-                    val exp = mTxs.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-                    val mLabel = mCal.timeInMillis.formatDate("MMM")
+                weekBuckets.map { (label, range) ->
+                    val inWeek = transactions.filter {
+                        val c = Calendar.getInstance().apply { timeInMillis = it.date }
+                        c.get(Calendar.DAY_OF_MONTH) in range
+                    }
+                    val inc = inWeek.filter { it.type == TransactionType.INCOME || it.type == TransactionType.REFUND }.sumOf { it.amount }
+                    val exp = inWeek.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     BarGroup(
-                        label = mLabel,
-                        income = if (inc > 0L) inc else 140000L + (m * 8000L),
-                        expense = if (exp > 0L) exp else 90000L + (m * 6000L)
+                        label = label,
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
@@ -309,8 +313,8 @@ class ReportsViewModel @Inject constructor(
                     val exp = mTxs.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     BarGroup(
                         label = mCal.timeInMillis.formatDate("MMM"),
-                        income = if (transactions.isEmpty()) 150000L + (offsetMonth * 20000L) else inc,
-                        expense = if (transactions.isEmpty()) 100000L + (offsetMonth * 15000L) else exp
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
@@ -326,8 +330,8 @@ class ReportsViewModel @Inject constructor(
                     val mCal = (cal.clone() as Calendar).apply { set(Calendar.MONTH, monthIdx) }
                     BarGroup(
                         label = mCal.timeInMillis.formatDate("MMM"),
-                        income = if (transactions.isEmpty()) 120000L + (monthIdx % 4) * 20000L else inc,
-                        expense = if (transactions.isEmpty()) 80000L + (monthIdx % 3) * 15000L else exp
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
@@ -343,8 +347,8 @@ class ReportsViewModel @Inject constructor(
                     val exp = yTxs.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
                     BarGroup(
                         label = targetYear.toString(),
-                        income = if (transactions.isEmpty()) 1500000L + (yOffset * 100000L) else inc,
-                        expense = if (transactions.isEmpty()) 1100000L + (yOffset * 80000L) else exp
+                        income = inc,
+                        expense = exp
                     )
                 }
             }
@@ -388,7 +392,7 @@ class ReportsViewModel @Inject constructor(
         val tempDays = mutableListOf<Triple<Long, Long, Int>>()
         val walkCal = gridStartCal.clone() as Calendar
 
-        val maxDaysAllowed = 70
+        val maxDaysAllowed = 120
         var counter = 0
         while (walkCal.timeInMillis <= gridEndCal.timeInMillis && counter < maxDaysAllowed) {
             val dayStart = walkCal.timeInMillis.startOfDayMillis()
@@ -399,16 +403,17 @@ class ReportsViewModel @Inject constructor(
             counter++
         }
 
+        val maxExpense = tempDays.maxOfOrNull { it.second }?.coerceAtLeast(1L) ?: 1L
         val inRangeExpenses = tempDays.filter { it.first in dateRange.start..dateRange.end }
-        val maxExpense = inRangeExpenses.maxOfOrNull { it.second }?.coerceAtLeast(1L) ?: 1L
         val realMaxDay = inRangeExpenses.filter { it.second > 0L }.maxByOrNull { it.second }
+            ?: tempDays.filter { it.second > 0L }.maxByOrNull { it.second }
 
         val heatmapDays = tempDays.map { (dayStart, amount, txCount) ->
             val c = Calendar.getInstance().apply { timeInMillis = dayStart }
             val dowJava = c.get(Calendar.DAY_OF_WEEK)
             val dow = if (dowJava == Calendar.SUNDAY) 7 else dowJava - 1
             val inRange = dayStart in dateRange.start..dateRange.end
-            val intensity = if (amount > 0L && inRange) {
+            val intensity = if (amount > 0L) {
                 (amount.toFloat() / maxExpense.toFloat()).coerceIn(0.15f, 1.0f)
             } else {
                 0.0f
@@ -427,11 +432,10 @@ class ReportsViewModel @Inject constructor(
 
         val highestDayText = realMaxDay?.let { it.first.formatDate("MMM d") } ?: "No spending recorded"
         val highestDayAmount = realMaxDay?.second ?: 0L
-        val effectiveMax = if (highestDayAmount > 0L) highestDayAmount else 0L
 
         return HeatmapComputationResult(
             days = heatmapDays,
-            maxDailySpending = effectiveMax,
+            maxDailySpending = highestDayAmount,
             highestDayText = highestDayText,
             highestDayAmount = highestDayAmount
         )

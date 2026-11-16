@@ -20,8 +20,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -41,7 +41,6 @@ import com.example.expensetracker.core.designsystem.components.AppIconButton
 import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppSnackbarHost
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.domain.model.RecurringTransaction
 import com.example.expensetracker.presentation.components.EmptyStateView
 import com.example.expensetracker.presentation.recurring.components.AddRecurringDialog
 import com.example.expensetracker.presentation.recurring.components.RecurringCardItem
@@ -51,9 +50,10 @@ fun RecurringScreen(
     viewModel: RecurringViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAddDialog by rememberSaveable { mutableStateOf(false) }
-    var pendingDelete by remember { mutableStateOf<RecurringTransaction?>(null) }
+    var pendingDeleteId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val pendingDelete = pendingDeleteId?.let { id -> state.recurringList.find { it.id == id } }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val snackbarHostState = remember { SnackbarHostState() }
@@ -121,7 +121,7 @@ fun RecurringScreen(
                         item = item,
                         currencyCode = state.currencyCode,
                         onToggle = { viewModel.toggleEnable(item) },
-                        onDelete = { pendingDelete = item }
+                        onDelete = { pendingDeleteId = item.id }
                     )
                 }
             }
@@ -139,7 +139,7 @@ fun RecurringScreen(
                         item = item,
                         currencyCode = state.currencyCode,
                         onToggle = { viewModel.toggleEnable(item) },
-                        onDelete = { pendingDelete = item }
+                        onDelete = { pendingDeleteId = item.id }
                     )
                 }
                 item { Spacer(modifier = Modifier.height(AppDimensions.components.fab * 1.4f)) }
@@ -161,16 +161,16 @@ fun RecurringScreen(
 
     pendingDelete?.let { item ->
         AppAlertDialog(
-            onDismissRequest = { pendingDelete = null },
+            onDismissRequest = { pendingDeleteId = null },
             title = stringResource(R.string.confirm_delete_recurring),
             text = { AppTypography.BodyMedium(text = stringResource(R.string.delete_recurring_warning, item.title)) },
             confirmButtonText = stringResource(R.string.action_delete),
             onConfirm = {
                 viewModel.deleteRecurring(item)
-                pendingDelete = null
+                pendingDeleteId = null
             },
             dismissButtonText = stringResource(R.string.action_cancel),
-            onDismiss = { pendingDelete = null },
+            onDismiss = { pendingDeleteId = null },
             isDestructive = true
         )
     }

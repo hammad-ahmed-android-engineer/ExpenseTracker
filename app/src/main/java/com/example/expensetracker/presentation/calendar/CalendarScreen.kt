@@ -19,26 +19,22 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import com.example.expensetracker.R
-import com.example.expensetracker.core.common.formatCurrencyCompact
-import com.example.expensetracker.core.common.formatDate
 import com.example.expensetracker.core.common.formatMonthYear
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.components.AppBadge
 import com.example.expensetracker.core.designsystem.components.AppCard
 import com.example.expensetracker.core.designsystem.components.AppIcon
 import com.example.expensetracker.core.designsystem.components.AppIconButton
 import com.example.expensetracker.core.designsystem.components.AppScaffold
 import com.example.expensetracker.core.designsystem.components.AppTopAppBar
-import com.example.expensetracker.core.designsystem.theme.semanticColors
+import com.example.expensetracker.presentation.calendar.components.CalendarDaySummaryHeader
 import com.example.expensetracker.presentation.calendar.components.CalendarTransactionRow
 import com.example.expensetracker.presentation.components.charts.HeatmapCalendar
 import java.util.Calendar
@@ -48,8 +44,7 @@ fun CalendarScreen(
     viewModel: CalendarViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val state by viewModel.uiState.collectAsState()
-    val colors = semanticColors
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
@@ -114,29 +109,12 @@ fun CalendarScreen(
                         .fillMaxHeight()
                         .padding(vertical = AppDimensions.paddingSmall)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        AppTypography.TitleMedium(text = state.selectedDateMillis.formatDate("MMM dd, yyyy"))
-                        Row(horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)) {
-                            if (state.selectedDayIncome > 0) {
-                                AppBadge(
-                                    text = "+${state.selectedDayIncome.formatCurrencyCompact(state.currencyCode)}",
-                                    containerColor = colors.incomeContainer,
-                                    contentColor = colors.income
-                                )
-                            }
-                            if (state.selectedDayExpense > 0) {
-                                AppBadge(
-                                    text = "-${state.selectedDayExpense.formatCurrencyCompact(state.currencyCode)}",
-                                    containerColor = colors.expenseContainer,
-                                    contentColor = colors.expense
-                                )
-                            }
-                        }
-                    }
+                    CalendarDaySummaryHeader(
+                        selectedDateMillis = state.selectedDateMillis,
+                        dayIncome = state.selectedDayIncome,
+                        dayExpense = state.selectedDayExpense,
+                        currencyCode = state.currencyCode
+                    )
                     Spacer(modifier = Modifier.height(AppDimensions.paddingSmall))
 
                     if (state.selectedDateTransactions.isEmpty()) {
@@ -174,29 +152,12 @@ fun CalendarScreen(
                 }
 
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        AppTypography.TitleMedium(text = state.selectedDateMillis.formatDate("MMM dd, yyyy"))
-                        Row(horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro)) {
-                            if (state.selectedDayIncome > 0) {
-                                AppBadge(
-                                    text = "+${state.selectedDayIncome.formatCurrencyCompact(state.currencyCode)}",
-                                    containerColor = colors.incomeContainer,
-                                    contentColor = colors.income
-                                )
-                            }
-                            if (state.selectedDayExpense > 0) {
-                                AppBadge(
-                                    text = "-${state.selectedDayExpense.formatCurrencyCompact(state.currencyCode)}",
-                                    containerColor = colors.expenseContainer,
-                                    contentColor = colors.expense
-                                )
-                            }
-                        }
-                    }
+                    CalendarDaySummaryHeader(
+                        selectedDateMillis = state.selectedDateMillis,
+                        dayIncome = state.selectedDayIncome,
+                        dayExpense = state.selectedDayExpense,
+                        currencyCode = state.currencyCode
+                    )
                 }
 
                 if (state.selectedDateTransactions.isEmpty()) {

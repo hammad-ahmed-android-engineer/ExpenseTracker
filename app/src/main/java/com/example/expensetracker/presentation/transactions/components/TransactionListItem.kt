@@ -1,7 +1,6 @@
 package com.example.expensetracker.presentation.transactions.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,11 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,10 +25,6 @@ import com.example.expensetracker.R
 import com.example.expensetracker.core.common.formatCurrency
 import com.example.expensetracker.core.designsystem.AppDimensions
 import com.example.expensetracker.core.designsystem.AppTypography
-import com.example.expensetracker.core.designsystem.components.AppDropdownMenu
-import com.example.expensetracker.core.designsystem.components.AppDropdownMenuItem
-import com.example.expensetracker.core.designsystem.components.AppIcon
-import com.example.expensetracker.core.designsystem.components.AppIconButton
 import com.example.expensetracker.core.designsystem.components.AppSurface
 import com.example.expensetracker.core.designsystem.theme.semanticColors
 import com.example.expensetracker.domain.model.Transaction
@@ -114,13 +104,13 @@ fun TransactionListItem(
             } else {
                 Column(modifier = Modifier.weight(1f)) {
                     AppTypography.TitleSmall(
-                        text = tx.title.ifEmpty { tx.categoryName.ifEmpty { "Transaction" } },
+                        text = tx.title.ifEmpty { tx.categoryName.ifEmpty { stringResource(R.string.default_transaction_title) } },
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
-                    if (!tx.note.isNullOrBlank() && tx.note != "Oct • Savoir" && tx.note != "checking") {
+                    if (!tx.note.isNullOrBlank()) {
                         Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
                         AppTypography.Caption(
                             text = tx.note,
@@ -129,27 +119,19 @@ fun TransactionListItem(
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
-                    Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
-                    // Account pills row: show primary account and secondary badge if space permits
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(AppDimensions.paddingMicro),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val primaryAccount = tx.accountName.ifEmpty { "Cash" }
-                        val accounts = if (primaryAccount == "Cash") listOf("Cash", "Bank") else listOf(primaryAccount)
-                        accounts.forEach { acc ->
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(AppDimensions.cornerSmall))
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                                    .padding(horizontal = AppDimensions.paddingSmall, vertical = AppDimensions.paddingMicro / 2)
-                            ) {
-                                AppTypography.Caption(
-                                    text = acc,
-                                    maxLines = 1,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                    if (tx.accountName.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(AppDimensions.cornerSmall))
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                                .padding(horizontal = AppDimensions.paddingSmall, vertical = AppDimensions.paddingMicro / 2)
+                        ) {
+                            AppTypography.Caption(
+                                text = tx.accountName,
+                                maxLines = 1,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }

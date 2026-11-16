@@ -33,7 +33,6 @@ fun DashboardCustomizeBottomSheet(
     preferences: UserPreferences,
     onToggleWidget: (DashboardWidgetType) -> Unit,
     onMoveWidget: (DashboardWidgetType, Boolean) -> Unit,
-    onToggleCompact: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
     val ordered = preferences.orderedWidgets()
@@ -48,30 +47,6 @@ fun DashboardCustomizeBottomSheet(
         title = stringResource(R.string.customize_dashboard)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(AppDimensions.paddingSmall)) {
-            AppSurface(
-                shape = RoundedCornerShape(AppDimensions.cornerLarge),
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(AppDimensions.paddingMedium),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        AppTypography.TitleSmall(text = stringResource(R.string.compact_hero_layout))
-                        AppTypography.Caption(text = stringResource(R.string.compact_hero_desc))
-                    }
-                    AppSwitch(
-                        checked = preferences.isCompactDashboard,
-                        onCheckedChange = onToggleCompact
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(AppDimensions.paddingMicro))
             AppTypography.LabelLarge(
                 text = stringResource(R.string.visible_widgets_order),
                 color = MaterialTheme.colorScheme.primary
@@ -81,6 +56,7 @@ fun DashboardCustomizeBottomSheet(
             ordered.forEachIndexed { index, widget ->
                 val isVisible = widget.key !in hiddenKeys
                 AppSurface(
+                    onClick = { onToggleWidget(widget) },
                     shape = RoundedCornerShape(AppDimensions.cornerMedium),
                     color = MaterialTheme.colorScheme.surfaceContainerLow,
                     modifier = Modifier.fillMaxWidth()

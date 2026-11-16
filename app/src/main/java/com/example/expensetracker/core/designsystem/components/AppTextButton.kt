@@ -9,7 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.expensetracker.core.designsystem.AppDimensions
-import com.example.expensetracker.core.designsystem.rememberDebouncedClick
+import com.example.expensetracker.core.utils.rememberDebouncedClick
 
 @Composable
 fun AppTextButton(

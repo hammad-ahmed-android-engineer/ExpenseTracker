@@ -5,7 +5,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.expensetracker.core.designsystem.rememberDebouncedCallback
 
 @Composable
 fun AppSwitch(
@@ -14,10 +13,9 @@ fun AppSwitch(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    val debouncedChange = onCheckedChange?.let { rememberDebouncedCallback(onAction = it) }
     Switch(
         checked = checked,
-        onCheckedChange = debouncedChange,
+        onCheckedChange = onCheckedChange,
         modifier = modifier,
         enabled = enabled,
         colors = SwitchDefaults.colors(

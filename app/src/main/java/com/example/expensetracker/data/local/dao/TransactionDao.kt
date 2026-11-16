@@ -2,21 +2,9 @@ package com.example.expensetracker.data.local.dao
 
 import androidx.room.*
 import com.example.expensetracker.data.local.entity.TransactionEntity
+import com.example.expensetracker.data.local.model.CategorySpending
+import com.example.expensetracker.data.local.model.DailySpending
 import kotlinx.coroutines.flow.Flow
-
-data class CategorySpending(
-    val categoryId: Long,
-    val categoryName: String,
-    val categoryColor: String,
-    val categoryIcon: String,
-    val totalAmount: Long
-)
-
-data class DailySpending(
-    val date: Long,
-    val totalExpense: Long,
-    val totalIncome: Long
-)
 
 @Dao
 interface TransactionDao {

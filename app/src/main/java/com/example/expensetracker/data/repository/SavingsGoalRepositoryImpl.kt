@@ -1,7 +1,6 @@
 package com.example.expensetracker.data.repository
 
 import com.example.expensetracker.data.local.dao.SavingsGoalDao
-import com.example.expensetracker.data.local.entity.SavingsContributionEntity
 import com.example.expensetracker.data.mapper.toDomain
 import com.example.expensetracker.data.mapper.toEntity
 import com.example.expensetracker.domain.model.SavingsContribution

@@ -1,8 +1,6 @@
 package com.example.expensetracker.presentation.dashboard.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -63,8 +61,8 @@ fun SpendingOverviewCard(
 
             DonutChart(
                 slices = displaySlices,
-                centerText = stringResource(R.string.oct_spending),
-                centerValue = 0L,
+                centerText = stringResource(R.string.total_spending),
+                centerValue = totalExpense,
                 currencyCode = currencyCode,
                 legendOnRight = true
             )

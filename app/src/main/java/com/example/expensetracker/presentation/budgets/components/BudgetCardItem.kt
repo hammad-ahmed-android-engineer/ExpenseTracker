@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -32,7 +31,6 @@ import com.example.expensetracker.core.designsystem.components.AppIconButton
 import com.example.expensetracker.domain.model.Budget
 import java.util.Locale
 
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -134,7 +132,7 @@ fun BudgetCardItem(
                 AppIconButton(onClick = { showMenu = true }) {
                     AppIcon(
                         imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Budget Options",
+                        contentDescription = stringResource(R.string.budget_options),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }

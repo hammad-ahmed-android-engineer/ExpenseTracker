@@ -4,7 +4,6 @@ import com.example.expensetracker.domain.model.CategorySpendingSummary
 import com.example.expensetracker.domain.model.DailySpendingSummary
 import com.example.expensetracker.domain.model.Transaction
 import com.example.expensetracker.domain.model.TransactionFilter
-import com.example.expensetracker.domain.model.TransactionSortOrder
 import com.example.expensetracker.domain.model.TransactionType
 import kotlinx.coroutines.flow.Flow
 

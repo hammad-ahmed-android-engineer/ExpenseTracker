@@ -5,11 +5,6 @@ import com.example.expensetracker.data.local.entity.BudgetCategoryEntity
 import com.example.expensetracker.data.local.entity.BudgetEntity
 import kotlinx.coroutines.flow.Flow
 
-data class BudgetWithSpent(
-    @Embedded val budget: BudgetEntity,
-    val totalSpent: Long
-)
-
 @Dao
 interface BudgetDao {
 

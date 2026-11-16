@@ -11,7 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,10 +32,10 @@ fun AddAccountDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String, type: AccountType, balance: String, currency: String) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedType by remember { mutableStateOf(AccountType.CASH) }
-    var balance by remember { mutableStateOf("0") }
-    var selectedCurrency by remember { mutableStateOf(defaultCurrency) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var selectedType by rememberSaveable { mutableStateOf(AccountType.CASH) }
+    var balance by rememberSaveable { mutableStateOf("0") }
+    var selectedCurrency by rememberSaveable { mutableStateOf(defaultCurrency) }
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
